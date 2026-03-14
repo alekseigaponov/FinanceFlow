@@ -24,7 +24,7 @@
             --border-color: rgba(0,0,0,0.06); --bg-input: rgba(255,255,255,0.5);
         }
 
-        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; transition: background 0.4s, color 0.4s; min-height: 100vh; }
+        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; transition: background 0.4s, color 0.4s; min-height: 100vh; overflow-x: hidden; }
         body::before { content: ''; position: fixed; top: -20%; right: -10%; width: 70%; height: 70%; background: radial-gradient(circle, var(--accent) 0%, transparent 60%); opacity: 0.15; z-index: -1; pointer-events: none; }
         [v-cloak] { display: none !important; }
         
@@ -34,7 +34,6 @@
         .input-huge::placeholder { color: var(--text-muted); opacity: 0.5; }
         .bg-input { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); }
         
-        /* Убираем видимые скроллбары для красоты */
         ::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
@@ -94,7 +93,11 @@
                     <div class="flex gap-2 overflow-x-auto mt-3 no-scrollbar" v-if="transactions.length > 0">
                         <button v-for="m in availableMonths" :key="m.val" @click="activeMonth = m.val" 
                                 class="text-[10px] font-bold px-4 py-1.5 rounded-full border transition-all whitespace-nowrap"
-                                :class="activeMonth === m.val ? 'border-blue-500 text-blue-500 bg-blue-500/10' : 'border-color text-muted'">
+                                :style="{ 
+                                    borderColor: activeMonth === m.val ? 'var(--accent)' : 'var(--border-color)', 
+                                    color: activeMonth === m.val ? 'var(--accent)' : 'var(--text-muted)',
+                                    background: activeMonth === m.val ? 'rgba(59,130,246,0.1)' : 'transparent'
+                                }">
                             {{ m.label }}
                         </button>
                     </div>
@@ -112,7 +115,7 @@
             <transition name="slide-up">
                 <div v-if="!sessionMode && !showSettings && !showHistory" class="space-y-4 mt-2">
                     
-                    <div v-if="transactions.length === 0" class="panel p-8 flex flex-col items-center justify-center text-center mt-6 shadow-lg border-blue-500/30">
+                    <div v-if="transactions.length === 0" class="panel p-8 flex flex-col items-center justify-center text-center mt-6 shadow-lg">
                         <span class="text-6xl mb-6 animate-bounce" style="animation-duration: 2s;">🚀</span>
                         <h3 class="text-xl font-900 mb-3">Добро пожаловать</h3>
                         <p class="text-xs text-muted mb-8 leading-relaxed">Внесите расходы вручную, восстановите бэкап из настроек или запустите демо-режим.</p>
@@ -122,6 +125,17 @@
                     </div>
 
                     <template v-else>
+                        <div class="panel p-5 relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-green-500/10 opacity-50"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-lg">🤖</span>
+                                    <h3 class="font-900 text-[10px] tracking-widest uppercase text-blue-500">AI Аналитика</h3>
+                                </div>
+                                <p class="text-xs font-semibold leading-relaxed" :class="isLight ? 'text-gray-700' : 'text-gray-300'">{{ smartInsight }}</p>
+                            </div>
+                        </div>
+
                         <div class="panel p-6 relative overflow-hidden">
                             <div class="absolute bottom-0 left-0 right-0 h-1/2 opacity-20 pointer-events-none">
                                 <svg viewBox="0 0 100 30" preserveAspectRatio="none" class="w-full h-full text-blue-500">
@@ -144,28 +158,26 @@
                         </div>
 
                         <div class="mt-8 flex-1">
-                            <h2 class="text-[10px] text-muted font-bold uppercase tracking-widest mb-6 ml-4">
-                                Последние операции
-                            </h2>
+                            <h2 class="text-[10px] text-muted font-bold uppercase tracking-widest mb-6 ml-4">Последние операции</h2>
                             
                             <transition-group name="list" tag="div" class="space-y-4">
                                 <div v-for="t in filteredTxs.slice(0, 5)" :key="t.id" class="swipe-item">
                                     
-                                    <div class="absolute inset-y-0 left-0 w-1/2 flex justify-start items-center px-6" :style="{ backgroundColor: 'var(--accent)', opacity: Math.min(1, Math.max(0, swipeState[t.id]?.offset || 0) / 80) }">
-                                        <span class="text-white font-900 text-xs tracking-widest flex items-center gap-2 transition-transform duration-300" :style="{ transform: `scale(${Math.min(1, Math.max(0, swipeState[t.id]?.offset || 0) / 80)})` }">
+                                    <div class="absolute inset-y-0 left-0 w-1/2 flex justify-start items-center px-6" :style="{ backgroundColor: 'var(--accent)', opacity: getSwipeOpacity(t.id, 'right') }">
+                                        <span class="text-white font-900 text-xs tracking-widest flex items-center gap-2 transition-transform duration-300" :style="{ transform: `scale(${getSwipeOpacity(t.id, 'right')})` }">
                                             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                         </span>
                                     </div>
 
-                                    <div class="absolute inset-y-0 right-0 w-1/2 flex justify-end items-center px-6 cursor-pointer" :style="{ backgroundColor: '#f43f5e', opacity: Math.min(1, Math.max(0, -(swipeState[t.id]?.offset || 0)) / 80), pointerEvents: (swipeState[t.id]?.offset || 0) < -40 ? 'auto' : 'none' }" @click="deleteTx(t.id)">
-                                        <span class="text-white font-900 text-xs tracking-widest flex items-center gap-2 transition-transform duration-300" :style="{ transform: `scale(${Math.min(1, Math.max(0, -(swipeState[t.id]?.offset || 0)) / 80)})` }">
+                                    <div class="absolute inset-y-0 right-0 w-1/2 flex justify-end items-center px-6 cursor-pointer" :style="{ backgroundColor: '#f43f5e', opacity: getSwipeOpacity(t.id, 'left'), pointerEvents: getSwipeOffset(t.id) < -40 ? 'auto' : 'none' }" @click="deleteTx(t.id)">
+                                        <span class="text-white font-900 text-xs tracking-widest flex items-center gap-2 transition-transform duration-300" :style="{ transform: `scale(${getSwipeOpacity(t.id, 'left')})` }">
                                             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                         </span>
                                     </div>
                                     
                                     <div class="panel p-5 relative flex justify-between items-center w-full"
-                                         :class="{ 'swipe-transition': !swipeState[t.id]?.swiping }"
-                                         :style="{ transform: `translateX(${swipeState[t.id]?.offset || 0}px)` }"
+                                         :class="{ 'swipe-transition': !isSwiping(t.id) }"
+                                         :style="{ transform: `translateX(${getSwipeOffset(t.id)}px)` }"
                                          @touchstart="onTouchStart($event, t.id)" @touchmove="onTouchMove($event, t.id)" @touchend="onTouchEnd($event, t.id)">
                                         <div class="flex items-center gap-4">
                                             <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm" :style="{ background: isLight ? '#fff' : 'rgba(0,0,0,0.3)', border: `1px solid ${getCatColor(t.cat)}50` }">
@@ -178,14 +190,14 @@
                                         </div>
                                         <div class="text-right">
                                             <span class="text-lg font-900" :class="t.amount > 0 ? 'text-green-500' : ''">
-                                                {{ t.amount > 0 ? '+' : '' }}{{ t.amount.toFixed(2) }} €
+                                                {{ t.amount > 0 ? '+' : '' }}{{ Math.abs(t.amount).toFixed(2) }} €
                                             </span>
                                         </div>
                                     </div>
                                 </div>
                             </transition-group>
 
-                            <button v-if="filteredTxs.length > 5" @click="openHistory" class="w-full mt-4 py-4 rounded-2xl bg-input border border-white/5 font-900 text-xs tracking-widest text-muted uppercase active:scale-95 transition-transform hover:bg-blue-500/10 hover:text-blue-500">
+                            <button v-if="filteredTxs.length > 5" @click="openHistory" class="w-full mt-4 py-4 rounded-2xl bg-input border border-white/5 font-900 text-xs tracking-widest text-muted uppercase active:scale-95 transition-transform hover:text-blue-500">
                                 Показать все ({{ filteredTxs.length }})
                             </button>
                         </div>
@@ -198,46 +210,47 @@
                     <div class="p-6 pb-2 border-b border-white/5">
                         <div class="flex justify-between items-center mb-6">
                             <h2 class="font-900 text-xl tracking-tight">ИСТОРИЯ</h2>
-                            <button @click="showHistory = false" class="w-8 h-8 flex items-center justify-center bg-input rounded-full font-bold">✕</button>
+                            <button @click="closeHistory" class="w-8 h-8 flex items-center justify-center bg-input rounded-full font-bold">✕</button>
                         </div>
                         
                         <div class="space-y-4">
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 opacity-50">🔍</span>
-                                <input type="text" v-model="searchQuery" class="w-full bg-input rounded-xl pl-10 pr-4 py-3 font-bold outline-none focus:border-blue-500 text-sm transition-colors" placeholder="Поиск по названию или сумме...">
+                                <input type="text" v-model="searchQuery" class="w-full bg-input rounded-xl pl-10 pr-4 py-3 font-bold outline-none focus:border-blue-500 text-sm transition-colors" placeholder="Поиск...">
                             </div>
                             
                             <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
                                 <button @click="historyFilter = 'all'" class="px-4 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap border transition-colors" :class="historyFilter === 'all' ? 'border-blue-500 bg-blue-500/10 text-blue-500' : 'border-transparent bg-input text-muted'">Все</button>
                                 <button @click="historyFilter = 'income'" class="px-4 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap border transition-colors" :class="historyFilter === 'income' ? 'border-green-500 bg-green-500/10 text-green-500' : 'border-transparent bg-input text-muted'">Доходы</button>
                                 <button @click="historyFilter = 'expense'" class="px-4 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap border transition-colors" :class="historyFilter === 'expense' ? 'border-rose-500 bg-rose-500/10 text-rose-500' : 'border-transparent bg-input text-muted'">Расходы</button>
-                                <button v-for="c in activeCategoriesUsed" :key="c.name" @click="historyFilter = c.name" class="px-4 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap border transition-colors" :class="historyFilter === c.name ? `border-white/50 bg-[${c.color}]/10 text-[${c.color}]` : 'border-transparent bg-input text-muted'">
+                                <button v-for="c in activeCategoriesUsed" :key="c.name" @click="historyFilter = c.name" class="px-4 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap border transition-colors" :style="{ color: historyFilter === c.name ? c.color : '', backgroundColor: historyFilter === c.name ? c.color + '1A' : '', borderColor: historyFilter === c.name ? c.color + '80' : 'transparent' }" :class="historyFilter !== c.name ? 'bg-input text-muted' : ''">
                                     {{ c.icon }} {{ c.name }}
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                    <div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
                         <div v-if="searchedTxs.length === 0" class="text-center text-muted font-bold text-xs mt-10">
                             Ничего не найдено 🕵️‍♂️
                         </div>
 
                         <transition-group name="list" tag="div" class="space-y-4">
                             <div v-for="t in searchedTxs.slice(0, historyLimit)" :key="t.id" class="swipe-item">
-                                <div class="absolute inset-y-0 left-0 w-1/2 flex justify-start items-center px-6" :style="{ backgroundColor: 'var(--accent)', opacity: Math.min(1, Math.max(0, swipeState[t.id]?.offset || 0) / 80) }">
-                                    <span class="text-white font-900 text-xs tracking-widest flex items-center gap-2 transition-transform duration-300" :style="{ transform: `scale(${Math.min(1, Math.max(0, swipeState[t.id]?.offset || 0) / 80)})` }">
+                                <div class="absolute inset-y-0 left-0 w-1/2 flex justify-start items-center px-6" :style="{ backgroundColor: 'var(--accent)', opacity: getSwipeOpacity(t.id, 'right') }">
+                                    <span class="text-white font-900 text-xs tracking-widest flex items-center gap-2 transition-transform duration-300" :style="{ transform: `scale(${getSwipeOpacity(t.id, 'right')})` }">
                                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                     </span>
                                 </div>
-                                <div class="absolute inset-y-0 right-0 w-1/2 flex justify-end items-center px-6 cursor-pointer" :style="{ backgroundColor: '#f43f5e', opacity: Math.min(1, Math.max(0, -(swipeState[t.id]?.offset || 0)) / 80), pointerEvents: (swipeState[t.id]?.offset || 0) < -40 ? 'auto' : 'none' }" @click="deleteTx(t.id)">
-                                    <span class="text-white font-900 text-xs tracking-widest flex items-center gap-2 transition-transform duration-300" :style="{ transform: `scale(${Math.min(1, Math.max(0, -(swipeState[t.id]?.offset || 0)) / 80)})` }">
+                                <div class="absolute inset-y-0 right-0 w-1/2 flex justify-end items-center px-6 cursor-pointer" :style="{ backgroundColor: '#f43f5e', opacity: getSwipeOpacity(t.id, 'left'), pointerEvents: getSwipeOffset(t.id) < -40 ? 'auto' : 'none' }" @click="deleteTx(t.id)">
+                                    <span class="text-white font-900 text-xs tracking-widest flex items-center gap-2 transition-transform duration-300" :style="{ transform: `scale(${getSwipeOpacity(t.id, 'left')})` }">
                                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </span>
                                 </div>
+                                
                                 <div class="bg-input p-5 relative flex justify-between items-center w-full rounded-[1.5rem] border border-white/5"
-                                     :class="{ 'swipe-transition': !swipeState[t.id]?.swiping }"
-                                     :style="{ transform: `translateX(${swipeState[t.id]?.offset || 0}px)` }"
+                                     :class="{ 'swipe-transition': !isSwiping(t.id) }"
+                                     :style="{ transform: `translateX(${getSwipeOffset(t.id)}px)` }"
                                      @touchstart="onTouchStart($event, t.id)" @touchmove="onTouchMove($event, t.id)" @touchend="onTouchEnd($event, t.id)">
                                     <div class="flex items-center gap-4">
                                         <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm" :style="{ background: isLight ? '#fff' : 'rgba(0,0,0,0.3)', border: `1px solid ${getCatColor(t.cat)}50` }">
@@ -250,14 +263,14 @@
                                     </div>
                                     <div class="text-right">
                                         <span class="text-lg font-900" :class="t.amount > 0 ? 'text-green-500' : ''">
-                                            {{ t.amount > 0 ? '+' : '' }}{{ t.amount.toFixed(2) }} €
+                                            {{ t.amount > 0 ? '+' : '' }}{{ Math.abs(t.amount).toFixed(2) }} €
                                         </span>
                                     </div>
                                 </div>
                             </div>
                         </transition-group>
 
-                        <button v-if="historyLimit < searchedTxs.length" @click="historyLimit += 20" class="w-full py-4 rounded-2xl bg-white/5 font-900 text-xs tracking-widest text-muted uppercase active:scale-95 transition-transform mt-4 mb-20">
+                        <button v-if="historyLimit < searchedTxs.length" @click="historyLimit += 20" class="w-full py-4 rounded-2xl bg-input font-900 text-xs tracking-widest text-muted uppercase active:scale-95 transition-transform mt-4 mb-20">
                             Загрузить еще
                         </button>
                     </div>
@@ -308,7 +321,7 @@
                         </div>
                     </div>
                     
-                    <button v-if="currentStep !== 2" @click="nextStep" class="w-full py-5 rounded-2xl bg-blue-600 text-white font-900 text-lg mt-8 active:scale-95 transition-transform shadow-[0_10px_30px_rgba(59,130,246,0.3)] relative z-10">
+                    <button v-if="currentStep !== 2" @click="nextStep" class="w-full py-5 rounded-2xl bg-blue-600 text-white font-900 text-lg mt-8 active:scale-95 transition-transform shadow-lg relative z-10">
                         {{ currentStep === 3 ? (editingId ? 'ОБНОВИТЬ' : 'СОХРАНИТЬ') : 'ДАЛЕЕ' }}
                     </button>
                 </div>
@@ -323,12 +336,18 @@
                     <div class="space-y-6">
                         <div class="p-5 bg-input rounded-2xl">
                             <div class="flex items-center gap-3 mb-3"><span class="text-2xl">💾</span><h3 class="font-900 text-sm">Бэкап базы данных</h3></div>
-                            <p class="text-[11px] text-muted mb-4 font-semibold">Сохраняйте данные в JSON-файл или загружайте историю из старой версии.</p>
                             <div class="flex gap-2">
                                 <button @click="exportJSON" class="flex-1 py-3 bg-white/10 rounded-xl font-900 text-xs tracking-widest uppercase active:scale-95 transition-transform">Экспорт</button>
                                 <button @click="triggerJSON" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-900 text-xs tracking-widest uppercase active:scale-95 transition-transform">Импорт</button>
                                 <input type="file" id="jsonFile" accept=".json" @change="importJSON" class="hidden">
                             </div>
+                            <p v-if="jsonMsg" class="text-[10px] text-green-500 mt-3 text-center font-bold">{{ jsonMsg }}</p>
+                        </div>
+                        <div class="p-5 bg-input rounded-2xl">
+                            <div class="flex items-center gap-3 mb-3"><span class="text-2xl">🏦</span><h3 class="font-900 text-sm">Импорт Swedbank</h3></div>
+                            <input type="file" id="csvFile" accept=".csv" @change="importCSV" class="hidden">
+                            <button @click="triggerCSV" class="w-full py-4 panel rounded-xl font-900 text-xs tracking-widest uppercase active:scale-95 transition-transform">Выбрать CSV</button>
+                            <p v-if="importMsg" class="text-[10px] text-green-500 mt-3 text-center font-bold">{{ importMsg }}</p>
                         </div>
                         <div class="p-5 bg-input rounded-2xl">
                             <div class="flex items-center gap-3 mb-3"><span class="text-2xl">⚠️</span><h3 class="font-900 text-sm text-rose-500">Сброс данных</h3></div>
@@ -375,11 +394,9 @@
                 const categories = ref(initialCats.length ? initialCats : [...DEFAULT_CATS]);
                 const activeMonth = ref(new Date().toISOString().slice(0, 7));
                 const isLight = ref(localStorage.getItem('financeX_theme') === 'light');
-                
                 const sessionMode = ref(false);
                 const showSettings = ref(false);
                 
-                // History State
                 const showHistory = ref(false);
                 const searchQuery = ref('');
                 const historyFilter = ref('all');
@@ -387,9 +404,10 @@
 
                 const currentStep = ref(1);
                 const mainInput = ref(null);
-                
                 const editingId = ref(null);
                 const wizard = ref({ type: 'expense', amount: '', category: '', name: '', date: '' });
+                const jsonMsg = ref('');
+                const importMsg = ref('');
 
                 onMounted(() => { 
                     if(isLight.value) document.body.classList.add('light-theme'); 
@@ -410,6 +428,7 @@
                 const getCatIcon = (n) => categories.value.find(c => c.name === n)?.icon || '📦';
                 const getCatColor = (n) => categories.value.find(c => c.name === n)?.color || '#3b82f6';
                 const formatDate = (d) => (d || '').split('-').reverse().join('.');
+                const scrollToTop = () => window.scrollTo({top: 0, behavior: 'smooth'});
 
                 const availableMonths = computed(() => {
                     const txs = transactions.value;
@@ -430,59 +449,44 @@
                 const monthExpense = computed(() => filteredTxs.value.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0));
                 const monthBalance = computed(() => monthIncome.value - monthExpense.value);
 
-                // --- SEARCH & HISTORY LOGIC ---
                 const openHistory = () => {
-                    searchQuery.value = '';
-                    historyFilter.value = 'all';
-                    historyLimit.value = 20;
-                    showHistory.value = true;
-                    window.scrollTo({top: 0});
+                    searchQuery.value = ''; historyFilter.value = 'all'; historyLimit.value = 20;
+                    showHistory.value = true; scrollToTop();
                 };
+                const closeHistory = () => { showHistory.value = false; };
 
                 const activeCategoriesUsed = computed(() => {
-                    const usedCatNames = new Set(filteredTxs.value.map(t => t.cat));
-                    return categories.value.filter(c => usedCatNames.has(c.name));
+                    const used = new Set(filteredTxs.value.map(t => t.cat));
+                    return categories.value.filter(c => used.has(c.name));
                 });
 
                 const searchedTxs = computed(() => {
                     let res = filteredTxs.value;
-                    
-                    // Filters
                     if (historyFilter.value === 'income') res = res.filter(t => t.amount > 0);
                     else if (historyFilter.value === 'expense') res = res.filter(t => t.amount < 0);
                     else if (historyFilter.value !== 'all') res = res.filter(t => t.cat === historyFilter.value);
                     
-                    // Search
                     if (searchQuery.value.trim()) {
                         const q = searchQuery.value.toLowerCase().trim();
-                        res = res.filter(t => 
-                            t.name.toLowerCase().includes(q) || 
-                            t.cat.toLowerCase().includes(q) || 
-                            Math.abs(t.amount).toString().includes(q)
-                        );
+                        res = res.filter(t => (t.name || '').toLowerCase().includes(q) || (t.cat || '').toLowerCase().includes(q) || Math.abs(t.amount).toString().includes(q));
                     }
                     return res;
                 });
 
-                // --- АНИМАЦИЯ БАЛАНСА ---
                 const animatedBalance = ref(0);
                 watch(monthBalance, (newVal) => {
                     const start = animatedBalance.value;
                     const dist = newVal - start;
-                    const duration = 500;
                     let startT = null;
                     const animate = (t) => {
                         if (!startT) startT = t;
-                        const p = Math.min((t - startT) / duration, 1);
-                        const ease = 1 - Math.pow(1 - p, 4);
-                        animatedBalance.value = start + dist * ease;
-                        if (p < 1) requestAnimationFrame(animate);
-                        else animatedBalance.value = newVal;
+                        const p = Math.min((t - startT) / 500, 1);
+                        animatedBalance.value = start + dist * (1 - Math.pow(1 - p, 4));
+                        if (p < 1) requestAnimationFrame(animate); else animatedBalance.value = newVal;
                     };
                     requestAnimationFrame(animate);
                 }, { immediate: true });
 
-                // --- ИДЕАЛЬНЫЙ ДВУСТОРОННИЙ SWIPE ---
                 const swipeState = ref({});
                 const onTouchStart = (e, id) => {
                     if (!swipeState.value[id]) swipeState.value[id] = { offset: 0 };
@@ -500,100 +504,82 @@
                     if (!swipeState.value[id]) return;
                     swipeState.value[id].swiping = false;
                     const offset = swipeState.value[id].offset;
-                    if (offset < -70) {
-                        swipeState.value[id].offset = -110;
-                    } else if (offset > 70) {
-                        swipeState.value[id].offset = 0;
-                        editTx(id);
-                    } else {
-                        swipeState.value[id].offset = 0;
-                    }
+                    if (offset < -70) swipeState.value[id].offset = -110;
+                    else if (offset > 70) { swipeState.value[id].offset = 0; editTx(id); }
+                    else swipeState.value[id].offset = 0;
+                };
+                const getSwipeOffset = (id) => swipeState.value[id] ? swipeState.value[id].offset : 0;
+                const isSwiping = (id) => swipeState.value[id] ? swipeState.value[id].swiping : false;
+                const getSwipeOpacity = (id, dir) => {
+                    const off = getSwipeOffset(id);
+                    if (dir === 'right' && off > 0) return Math.min(1, off / 80);
+                    if (dir === 'left' && off < 0) return Math.min(1, -off / 80);
+                    return 0;
                 };
 
-                const deleteTx = (id) => {
-                    transactions.value = transactions.value.filter(t => t.id !== id);
-                    delete swipeState.value[id];
-                    saveData();
-                };
+                const deleteTx = (id) => { transactions.value = transactions.value.filter(t => t.id !== id); delete swipeState.value[id]; saveData(); };
 
                 const sparklinePoints = computed(() => {
                     const txs = filteredTxs.value.slice().sort((a,b) => (a.date||'').localeCompare(b.date||'')); 
                     if (txs.length === 0) return "0,30 100,30";
                     let bal = 0;
-                    const pointsArr = txs.map(t => { bal += t.amount; return bal; });
-                    const min = Math.min(...pointsArr, 0), max = Math.max(...pointsArr, 1), range = max - min || 1;
-                    return pointsArr.map((p, i) => `${(i / (pointsArr.length - 1 || 1)) * 100},${30 - ((p - min) / range * 25)}`).join(' ');
+                    const pts = txs.map(t => { bal += t.amount; return bal; });
+                    const min = Math.min(...pts, 0), max = Math.max(...pts, 1), range = max - min || 1;
+                    return pts.map((p, i) => `${(i / (pts.length - 1 || 1)) * 100},${30 - ((p - min) / range * 25)}`).join(' ');
                 });
 
                 const forecast = computed(() => {
                     const [y, m] = activeMonth.value.split('-').map(Number);
                     if(!y || !m) return { daily: 0, save: 0 };
                     const today = new Date(), isCurrent = today.getFullYear() === y && today.getMonth() + 1 === m;
-                    const daysInMonth = new Date(y, m, 0).getDate(), dayNow = isCurrent ? today.getDate() : daysInMonth;
+                    const days = new Date(y, m, 0).getDate(), dayNow = isCurrent ? today.getDate() : days;
                     const daily = dayNow > 0 ? monthExpense.value / dayNow : 0;
-                    return { daily, save: monthIncome.value - (daily * daysInMonth) };
+                    return { daily, save: monthIncome.value - (daily * days) };
                 });
 
-                // --- WIZARD LOGIC (ADD & EDIT) ---
+                const smartInsight = computed(() => {
+                    if(monthExpense.value === 0) return "Внесите расходы, чтобы ИИ начал анализ ваших привычек.";
+                    if(forecast.value.save < 0) return `Внимание: при текущем темпе трат вы уйдете в минус на ${Math.abs(forecast.value.save).toFixed(0)}€.`;
+                    return `Отличный темп! К концу месяца у вас останется примерно ${forecast.value.save.toFixed(0)}€.`;
+                });
+
                 const startSession = () => {
                     editingId.value = null; 
                     wizard.value = { type: 'expense', amount: '', category: '', name: '', date: new Date().toISOString().split('T')[0] };
                     currentStep.value = 1; sessionMode.value = true;
                     nextTick(() => mainInput.value && mainInput.value.focus());
                 };
-
                 const editTx = (id) => {
-                    const t = transactions.value.find(tx => tx.id === id);
-                    if(!t) return;
+                    const t = transactions.value.find(tx => tx.id === id); if(!t) return;
                     editingId.value = id;
-                    wizard.value = {
-                        type: t.amount >= 0 ? 'income' : 'expense',
-                        amount: Math.abs(t.amount),
-                        category: t.cat,
-                        name: t.name === t.cat ? '' : t.name,
-                        date: t.date
-                    };
-                    currentStep.value = 1;
-                    sessionMode.value = true;
+                    wizard.value = { type: t.amount >= 0 ? 'income' : 'expense', amount: Math.abs(t.amount), category: t.cat, name: t.name === t.cat ? '' : t.name, date: t.date };
+                    currentStep.value = 1; sessionMode.value = true;
                     nextTick(() => mainInput.value && mainInput.value.focus());
                 };
-
                 const selectCategory = (cat) => { wizard.value.category = cat; wizard.value.name = wizard.value.name || cat; currentStep.value = 3; };
-                
                 const nextStep = () => {
                     if (currentStep.value === 1 && wizard.value.amount > 0) currentStep.value = 2;
                     else if (currentStep.value === 3) {
-                        const finalAmount = wizard.value.type === 'expense' ? -Math.abs(wizard.value.amount) : Math.abs(wizard.value.amount);
-                        const finalName = wizard.value.name || wizard.value.category;
-                        const finalDate = wizard.value.date || new Date().toISOString().split('T')[0];
-
+                        const amt = wizard.value.type === 'expense' ? -Math.abs(wizard.value.amount) : Math.abs(wizard.value.amount);
+                        const name = wizard.value.name || wizard.value.category;
+                        const date = wizard.value.date || new Date().toISOString().split('T')[0];
                         if (editingId.value) {
                             const idx = transactions.value.findIndex(tx => tx.id === editingId.value);
-                            if (idx !== -1) {
-                                transactions.value[idx] = {
-                                    ...transactions.value[idx],
-                                    name: finalName, amount: finalAmount, cat: wizard.value.category, date: finalDate
-                                };
-                            }
+                            if (idx !== -1) transactions.value[idx] = { ...transactions.value[idx], name, amount: amt, cat: wizard.value.category, date };
                         } else {
-                            transactions.value.unshift({
-                                id: Date.now(), name: finalName, amount: finalAmount, cat: wizard.value.category, date: finalDate
-                            });
+                            transactions.value.unshift({ id: Date.now(), name, amount: amt, cat: wizard.value.category, date });
                         }
-                        
-                        saveData(); sessionMode.value = false; editingId.value = null; window.scrollTo({top: 0});
+                        saveData(); sessionMode.value = false; editingId.value = null; scrollToTop();
                     }
                 };
-
                 const cancelSession = () => { sessionMode.value = false; editingId.value = null; };
-                
+
                 const exportJSON = () => {
                     const data = { version: 5, exportedAt: new Date().toISOString(), transactions: transactions.value, categories: categories.value };
                     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
                     a.download = `flowfinance-${new Date().toISOString().slice(0, 10)}.json`; a.click(); URL.revokeObjectURL(a.href);
                 };
-
                 const triggerJSON = () => document.getElementById('jsonFile').click();
                 const importJSON = (e) => {
                     const file = e.target.files[0]; if (!file) return;
@@ -609,15 +595,44 @@
                     }; r.readAsText(file);
                 };
 
+                const triggerCSV = () => document.getElementById('csvFile').click();
+                const importCSV = (e) => {
+                    const file = e.target.files[0]; if (!file) return;
+                    const r = new FileReader();
+                    r.onload = (ev) => {
+                        try {
+                            const lines = ev.target.result.split(/\r?\n/).filter(l => l.trim());
+                            const delim = lines[0].includes(';') ? ';' : ',';
+                            let added = 0;
+                            for(let i=1; i<lines.length; i++) {
+                                const cols = lines[i].split(delim).map(c => c.replace(/^"|"$/g, '').trim());
+                                if(cols.length < 5) continue;
+                                const dateMatch = cols.find(c => c.match(/^\d{2}\.\d{2}\.\d{4}$/)); if(!dateMatch) continue;
+                                const date = dateMatch.split('.').reverse().join('-');
+                                const amtStr = cols.find(c => c.match(/^-?\d+[,.]\d{2}$/)); if(!amtStr) continue;
+                                const amt = parseFloat(amtStr.replace(',', '.'));
+                                const name = cols[3] || cols[2] || 'Swedbank TX';
+                                if(!transactions.value.some(t => t.date === date && t.amount === amt && t.name === name)) {
+                                    transactions.value.unshift({ id: Date.now() + i, name, amount: amt, date, cat: 'Прочее' });
+                                    added++;
+                                }
+                            }
+                            saveData(); importMsg.value = `УСПЕХ: +${added} операций.`;
+                            setTimeout(() => { showSettings.value = false; importMsg.value = ''; }, 2000);
+                        } catch(err) { importMsg.value = `ОШИБКА формата.`; }
+                    }; r.readAsText(file, 'UTF-8');
+                };
+
                 const hardReset = () => { if(confirm("Удалить ВСЁ?")) { transactions.value = []; categories.value = [...DEFAULT_CATS]; saveData(); showSettings.value = false; } };
 
                 const loadDemoData = () => {
                     const demo = []; const now = new Date(); const y = now.getFullYear(); const m = String(now.getMonth() + 1).padStart(2, '0');
-                    for (let i=1; i<=30; i++) {
-                        demo.push({ id: i, name: `Кофе ${i}`, amount: -3.50, cat: 'Рестораны', date: `${y}-${m}-${String(i).padStart(2,'0')}` });
-                    }
-                    demo.push({ id: 101, name: 'Зарплата Google', amount: 4500, cat: 'Зарплата', date: `${y}-${m}-01` });
-                    demo.push({ id: 102, name: 'Аренда квартиры', amount: -1200, cat: 'Дом', date: `${y}-${m}-02` });
+                    demo.push({ id: 1, name: 'Зарплата Google', amount: 4500, cat: 'Зарплата', date: `${y}-${m}-01` });
+                    demo.push({ id: 2, name: 'Аренда квартиры', amount: -1200, cat: 'Дом', date: `${y}-${m}-02` });
+                    demo.push({ id: 3, name: 'Prisma Supermarket', amount: -145.50, cat: 'Продукты', date: `${y}-${m}-05` });
+                    demo.push({ id: 4, name: 'Spotify & Netflix', amount: -21.98, cat: 'Подписки', date: `${y}-${m}-06` });
+                    demo.push({ id: 5, name: 'Wolt Delivery', amount: -34.00, cat: 'Рестораны', date: `${y}-${m}-08` });
+                    demo.push({ id: 6, name: 'Uber/Bolt', amount: -12.50, cat: 'Транспорт', date: `${y}-${m}-09` });
                     transactions.value = demo.sort((a,b) => b.date.localeCompare(a.date));
                     activeMonth.value = `${y}-${m}`; saveData(); showSettings.value = false;
                 };
@@ -626,10 +641,10 @@
                     appLoaded, transactions, categories, activeMonth, availableMonths, filteredTxs,
                     monthIncome, monthExpense, monthBalance, animatedBalance, sparklinePoints, forecast, smartInsight,
                     sessionMode, showSettings, currentStep, wizard, mainInput, editingId, isLight, toggleTheme,
-                    showHistory, searchQuery, historyFilter, historyLimit, searchedTxs, activeCategoriesUsed, openHistory,
+                    showHistory, searchQuery, historyFilter, historyLimit, searchedTxs, activeCategoriesUsed, openHistory, closeHistory,
                     startSession, editTx, selectCategory, nextStep, cancelSession, deleteTx, getCatIcon, getCatColor, formatDate, 
-                    swipeState, onTouchStart, onTouchMove, onTouchEnd,
-                    exportJSON, triggerJSON, importJSON, hardReset, loadDemoData
+                    swipeState, onTouchStart, onTouchMove, onTouchEnd, getSwipeOffset, getSwipeOpacity, isSwiping,
+                    exportJSON, triggerJSON, importJSON, jsonMsg, triggerCSV, importCSV, importMsg, hardReset, loadDemoData, scrollToTop
                 };
             }
         }).mount('#app');
