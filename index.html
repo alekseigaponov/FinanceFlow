@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>FlowFinance</title>
+    <title>FlowFinance Local</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    
     <style>
         :root { --accent: #3b82f6; --bg: #020617; --panel: rgba(30, 41, 59, 0.6); --text-main: #f8fafc; --text-muted: #94a3b8; --border-color: rgba(255,255,255,0.08); }
         body.light-theme { --accent: #2563eb; --bg: #f1f5f9; --panel: rgba(255, 255, 255, 0.8); --text-main: #0f172a; --text-muted: #64748b; --border-color: rgba(0,0,0,0.06); }
-        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; transition: background 0.4s; min-height: 100vh; }
+        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; transition: background 0.4s; min-height: 100vh; overflow-x: hidden; }
         [v-cloak] { display: none !important; }
         .panel { background: var(--panel); backdrop-filter: blur(24px); border: 1px solid var(--border-color); border-radius: 2rem; }
-        .spinner { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .input-huge { background: transparent; border: none; font-size: 3.5rem; font-weight: 900; text-align: center; color: var(--text-main); width: 100%; outline: none; }
+        .slide-up-enter-active, .slide-up-leave-active { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(40px); }
     </style>
 </head>
 <body class="pb-32 antialiased">
@@ -26,149 +25,123 @@
         
         <header class="flex justify-between items-center py-4">
             <h1 class="text-2xl font-900 tracking-tighter">Flow<span class="text-blue-500">Finance</span></h1>
-            <div class="flex gap-2">
-                <button v-if="user" @click="showSettings = true" class="w-10 h-10 rounded-full border-2 border-blue-500/30 overflow-hidden">
-                    <img v-if="user.photoURL" :src="user.photoURL" class="w-full h-full object-cover">
-                </button>
-                <button @click="toggleTheme" class="w-10 h-10 rounded-full panel flex items-center justify-center">{{ isLight ? '🌙' : '☀️' }}</button>
-                <button v-if="!user" @click="showSettings = true" class="w-10 h-10 rounded-full panel flex items-center justify-center">⚙️</button>
-            </div>
+            <button @click="toggleTheme" class="w-10 h-10 rounded-full panel flex items-center justify-center text-xl active:scale-90 transition-transform">
+                {{ isLight ? '🌙' : '☀️' }}
+            </button>
         </header>
 
-        <div v-if="!sessionMode && !showSettings" class="space-y-6">
+        <div v-if="!sessionMode" class="space-y-6">
             <div class="panel p-6">
-                <p class="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Баланс месяца</p>
-                <div class="text-4xl font-900 tracking-tighter">{{ monthBalance.toFixed(2) }}<span class="text-xl text-blue-500 ml-1">€</span></div>
-                <div class="flex justify-between pt-4 mt-4 border-t border-white/5">
-                    <div class="text-green-500 font-900">+{{ monthIncome.toFixed(0) }}€</div>
-                    <div class="text-rose-500 font-900">-{{ monthExpense.toFixed(0) }}€</div>
+                <p class="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Общий баланс</p>
+                <div class="text-4xl font-900 tracking-tighter" :class="balance >= 0 ? '' : 'text-rose-500'">
+                    {{ balance.toFixed(2) }}<span class="text-xl text-blue-500 ml-1">€</span>
+                </div>
+                <div class="flex justify-between pt-4 mt-4 border-t border-white/5 font-900">
+                    <div class="text-green-500">+{{ income.toFixed(0) }}€</div>
+                    <div class="text-rose-500">-{{ expense.toFixed(0) }}€</div>
                 </div>
             </div>
 
             <div class="space-y-3">
-                <h2 class="text-[10px] text-muted font-bold uppercase ml-4">История</h2>
-                <div v-if="filteredTxs.length === 0" class="p-10 text-center opacity-30 text-xs font-bold uppercase">Пусто</div>
-                <div v-for="t in filteredTxs" :key="t.id" class="panel p-4 flex justify-between items-center">
+                <h2 class="text-[10px] text-muted font-bold uppercase tracking-widest ml-4">История операций</h2>
+                <div v-if="transactions.length === 0" class="p-10 text-center opacity-30 text-xs font-bold uppercase">
+                    Нет данных
+                </div>
+                <div v-for="t in transactions" :key="t.id" class="panel p-4 flex justify-between items-center">
                     <div class="flex items-center gap-3">
-                        <div class="text-2xl">{{ getCatIcon(t.cat) }}</div>
-                        <div><h3 class="font-900 text-sm">{{ t.name }}</h3><p class="text-[9px] text-muted">{{ t.date }}</p></div>
+                        <div class="text-2xl">{{ getIcon(t.cat) }}</div>
+                        <div>
+                            <h3 class="font-900 text-sm">{{ t.name }}</h3>
+                            <p class="text-[9px] text-muted">{{ t.date }}</p>
+                        </div>
                     </div>
-                    <div class="font-900" :class="t.amount > 0 ? 'text-green-500' : ''">{{ t.amount > 0 ? '+' : '' }}{{ t.amount.toFixed(2) }}€</div>
+                    <div class="font-900" :class="t.amount > 0 ? 'text-green-500' : ''">
+                        {{ t.amount > 0 ? '+' : '' }}{{ t.amount.toFixed(2) }}€
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div v-if="showSettings" class="panel p-6 fixed inset-x-4 top-20 z-50 shadow-2xl">
-            <div class="flex justify-between mb-8"><h2 class="font-900 uppercase">Аккаунт</h2><button @click="showSettings = false">✕</button></div>
-            <div v-if="!user" class="text-center space-y-6">
-                <p class="text-muted text-xs">Войдите для сохранения данных</p>
-                <button @click="loginGoogle" class="w-full py-4 bg-white text-black rounded-2xl font-900 uppercase flex items-center justify-center gap-3">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" class="w-5 h-5"> Google Login
-                </button>
-            </div>
-            <div v-else class="text-center space-y-6">
-                <img :src="user.photoURL" class="w-16 h-16 rounded-full mx-auto border-2 border-blue-500">
-                <h3 class="font-900">{{ user.displayName }}</h3>
-                <button @click="logout" class="w-full py-4 text-rose-500 font-900 text-[10px] uppercase border border-rose-500/20 rounded-xl">Выйти</button>
-            </div>
-        </div>
+        <transition name="slide-up">
+            <div v-if="sessionMode" class="panel p-6 fixed inset-x-4 top-20 z-50 min-h-[50vh] flex flex-col shadow-2xl">
+                <div class="flex justify-between items-center mb-8 text-[10px] font-bold text-muted uppercase tracking-widest">
+                    <span>{{ currentStep === 1 ? 'Сумма' : 'Категория' }}</span>
+                    <button @click="sessionMode = false">Отмена</button>
+                </div>
 
-        <div v-if="sessionMode" class="panel p-6 fixed inset-x-4 top-20 z-50 min-h-[50vh] flex flex-col">
-            <div class="flex justify-between mb-8"><span>Шаг {{currentStep}}</span><button @click="sessionMode = false">Отмена</button></div>
-            <div v-if="currentStep === 1" class="flex-1 flex flex-col justify-center">
-                <input type="number" v-model.number="wizard.amount" class="input-huge" placeholder="0" autofocus>
-            </div>
-            <div v-if="currentStep === 2" class="grid grid-cols-3 gap-2">
-                <button v-for="c in categories" @click="selectCategory(c.name)" class="bg-white/5 p-4 rounded-xl flex flex-col items-center">
-                    <span>{{c.icon}}</span><span class="text-[9px] font-bold">{{c.name}}</span>
-                </button>
-            </div>
-            <button v-if="currentStep === 1" @click="currentStep = 2" class="w-full py-4 bg-blue-600 rounded-xl font-900 uppercase">Далее</button>
-        </div>
+                <div v-if="currentStep === 1" class="flex-1 flex flex-col justify-center">
+                    <input type="number" v-model.number="wizard.amount" class="input-huge" placeholder="0" autofocus>
+                    <button @click="currentStep = 2" v-if="wizard.amount > 0" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-900 mt-8 uppercase tracking-widest">Далее</button>
+                </div>
 
-        <button @click="startSession" class="fixed bottom-8 right-6 w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-2xl z-40 transition-transform active:scale-90">
-            <svg v-if="isSyncing" class="spinner" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path>
-            </svg>
-            <svg v-else width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                <path d="M12 4v16m8-8H4"></path>
-            </svg>
+                <div v-if="currentStep === 2" class="grid grid-cols-3 gap-3">
+                    <button v-for="c in categories" @click="save(c)" class="bg-white/5 p-4 rounded-2xl flex flex-col items-center active:scale-95 transition-transform border border-white/5">
+                        <span class="text-3xl mb-1">{{ c.icon }}</span>
+                        <span class="text-[9px] font-bold uppercase text-center">{{ c.name }}</span>
+                    </button>
+                </div>
+            </div>
+        </transition>
+
+        <button @click="openWizard" class="fixed bottom-8 right-6 w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xl active:scale-90 transition-transform">
+            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
         </button>
     </div>
 
     <script>
-        const firebaseConfig = {
-          apiKey: "AIzaSyBQywx3tIsJE1l5NiV24IPd5flsejgtDNA",
-          authDomain: "flowfinance-875b2.firebaseapp.com",
-          projectId: "flowfinance-875b2",
-          storageBucket: "flowfinance-875b2.firebasestorage.app",
-          messagingSenderId: "171481332033",
-          appId: "1:171481332033:web:3503b83b2d256f3c5c89c0"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
         const { createApp, ref, computed, onMounted } = Vue;
 
         createApp({
             setup() {
-                const user = ref(null), transactions = ref([]), isSyncing = ref(false), appLoaded = ref(false);
-                const isLight = ref(localStorage.getItem('theme') === 'light'), showSettings = ref(false), sessionMode = ref(false);
-                const currentStep = ref(1), wizard = ref({}), activeMonth = ref(new Date().toISOString().slice(0, 7));
+                const transactions = ref([]);
+                const isLight = ref(localStorage.getItem('theme') === 'light');
+                const sessionMode = ref(false);
+                const currentStep = ref(1);
+                const wizard = ref({ amount: 0, type: 'expense' });
 
-                const categories = [{name:'Еда', icon:'🍎'}, {name:'Авто', icon:'🚗'}, {name:'ЗП', icon:'💰'}, {name:'Дом', icon:'🏠'}];
+                const categories = [
+                    {name:'Еда', icon:'🍎'}, {name:'Авто', icon:'🚗'}, 
+                    {name:'Дом', icon:'🏠'}, {name:'ЗП', icon:'💰'},
+                    {name:'Спорт', icon:'💪'}, {name:'Прочее', icon:'📦'}
+                ];
 
                 onMounted(() => {
-                    auth.onAuthStateChanged(u => {
-                        user.value = u;
-                        if(u) syncCloud(); else { transactions.value = JSON.parse(localStorage.getItem('finance_v8')) || []; }
-                        appLoaded.value = true;
-                    });
+                    if (isLight.value) document.body.classList.add('light-theme');
+                    const saved = localStorage.getItem('finance_local_v1');
+                    if (saved) transactions.value = JSON.parse(saved);
                 });
 
-                const syncCloud = async () => {
-                    isSyncing.value = true; // ВКЛЮЧАЕМ КРУТИЛКУ
-                    console.log("Синхронизация запущена...");
-                    try {
-                        const doc = await db.collection('users').doc(user.value.uid).get();
-                        if(doc.exists) transactions.value = doc.data().transactions || [];
-                        else saveData();
-                    } catch(e) { console.error(e); }
-                    
-                    // Небольшая задержка, чтобы глаз успел заметить анимацию
-                    setTimeout(() => { isSyncing.value = false; console.log("Синхронизация завершена."); }, 1000);
+                const openWizard = () => {
+                    wizard.value = { amount: '', type: 'expense' };
+                    currentStep.value = 1;
+                    sessionMode.value = true;
                 };
 
-                const saveData = async () => {
-                    isSyncing.value = true; // КРУТИМ ПРИ СОХРАНЕНИИ
-                    const data = JSON.stringify(transactions.value);
-                    localStorage.setItem('finance_v8', data);
-                    if(user.value) {
-                        await db.collection('users').doc(user.value.uid).set({ transactions: transactions.value }, {merge:true});
-                    }
-                    setTimeout(() => isSyncing.value = false, 800);
-                };
-
-                const startSession = () => { currentStep.value = 1; wizard.value = { amount: '', type: 'expense' }; sessionMode.value = true; };
-                const selectCategory = (c) => { 
-                    wizard.value.cat = c; wizard.value.name = c; 
-                    wizard.value.date = new Date().toISOString().slice(0,10);
-                    transactions.value.unshift({ id: Date.now(), ...wizard.value, amount: -wizard.value.amount });
-                    saveData();
+                const save = (cat) => {
+                    const newTx = {
+                        id: Date.now(),
+                        amount: wizard.value.type === 'expense' ? -wizard.value.amount : wizard.value.amount,
+                        cat: cat.name,
+                        name: cat.name,
+                        date: new Date().toLocaleDateString('ru-RU')
+                    };
+                    transactions.value.unshift(newTx);
+                    localStorage.setItem('finance_local_v1', JSON.stringify(transactions.value));
                     sessionMode.value = false;
                 };
 
                 return {
-                    user, transactions, isSyncing, isLight, showSettings, sessionMode, currentStep, wizard, categories,
-                    monthIncome: computed(() => transactions.value.filter(t => t.amount > 0).reduce((s,t)=>s+t.amount,0)),
-                    monthExpense: computed(() => transactions.value.filter(t => t.amount < 0).reduce((s,t)=>s+Math.abs(t.amount),0)),
-                    monthBalance: computed(() => transactions.value.reduce((s,t)=>s+t.amount,0)),
-                    filteredTxs: computed(() => transactions.value),
-                    toggleTheme: () => { isLight.value = !isLight.value; document.body.classList.toggle('light-theme'); },
-                    loginGoogle: () => auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider()),
-                    logout: () => auth.signOut(),
-                    startSession, selectCategory, getCatIcon: c => categories.find(cat=>cat.name===c)?.icon || '📦'
+                    transactions, isLight, sessionMode, currentStep, wizard, categories,
+                    balance: computed(() => transactions.value.reduce((s, t) => s + t.amount, 0)),
+                    income: computed(() => transactions.value.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0)),
+                    expense: computed(() => transactions.value.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0)),
+                    toggleTheme: () => {
+                        isLight.value = !isLight.value;
+                        localStorage.setItem('theme', isLight.value ? 'light' : 'dark');
+                        document.body.classList.toggle('light-theme');
+                    },
+                    getIcon: (name) => categories.find(c => c.name === name)?.icon || '📦',
+                    openWizard, save
                 }
             }
         }).mount('#app');
