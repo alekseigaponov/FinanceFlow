@@ -83,25 +83,25 @@
             
             <header class="flex justify-between items-center py-4 mb-2">
                 <div class="flex flex-col">
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 mb-3">
                         <svg viewBox="0 0 100 100" class="w-6 h-6" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M 15 80 Q 40 80, 55 55 T 80 25" stroke="url(#flowGradient)" stroke-width="12" />
                             <path d="M 55 25 L 80 25 L 80 50" stroke="#10b981" stroke-width="12" />
                         </svg>
                         <h1 class="text-2xl font-900 tracking-tighter">Flow<span class="text-blue-500">Finance</span></h1>
                     </div>
-                    <div class="flex gap-2 overflow-x-auto mt-3 no-scrollbar" v-if="transactions.length > 0">
-                        <button v-for="m in availableMonths" :key="m.val" @click="activeMonth = m.val" 
-                                class="text-[10px] font-bold px-4 py-1.5 rounded-full border transition-all whitespace-nowrap"
-                                :style="{ 
-                                    borderColor: activeMonth === m.val ? 'var(--accent)' : 'var(--border-color)', 
-                                    color: activeMonth === m.val ? 'var(--accent)' : 'var(--text-muted)',
-                                    background: activeMonth === m.val ? 'rgba(59,130,246,0.1)' : 'transparent'
-                                }">
-                            {{ m.label }}
-                        </button>
+                    
+                    <div class="relative inline-flex items-center w-max" v-if="transactions.length > 0">
+                        <select v-model="activeMonth" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <option v-for="m in availableMonths" :key="m.val" :value="m.val">{{ m.label }}</option>
+                        </select>
+                        <div class="px-4 py-2 rounded-full border border-blue-500/50 bg-blue-500/10 text-blue-500 text-[11px] font-bold flex items-center gap-2 tracking-wide shadow-sm">
+                            {{ activeMonthLabel }}
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
                     </div>
                 </div>
+
                 <div class="flex gap-2 self-start mt-1">
                     <button @click="toggleTheme" class="w-10 h-10 rounded-full panel flex items-center justify-center text-xl active:scale-90 transition-transform">
                         {{ isLight ? '🌙' : '☀️' }}
@@ -115,7 +115,7 @@
             <transition name="slide-up">
                 <div v-if="!sessionMode && !showSettings && !showHistory" class="space-y-4 mt-2">
                     
-                    <div v-if="transactions.length === 0" class="panel p-8 flex flex-col items-center justify-center text-center mt-6 shadow-lg">
+                    <div v-if="transactions.length === 0" class="panel p-8 flex flex-col items-center justify-center text-center mt-6 shadow-lg border-blue-500/30">
                         <span class="text-6xl mb-6 animate-bounce" style="animation-duration: 2s;">🚀</span>
                         <h3 class="text-xl font-900 mb-3">Добро пожаловать</h3>
                         <p class="text-xs text-muted mb-8 leading-relaxed">Внесите расходы вручную, восстановите бэкап из настроек или запустите демо-режим.</p>
@@ -142,11 +142,15 @@
                                     <polyline fill="none" stroke="currentColor" stroke-width="2.5" :points="sparklinePoints" stroke-linejoin="round" stroke-linecap="round"/>
                                 </svg>
                             </div>
-                            <div class="relative z-10 flex justify-between items-start">
+                            
+                            <div class="relative z-10 flex justify-between items-start mb-6">
                                 <div>
                                     <p class="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Баланс месяца</p>
                                     <div class="text-5xl font-900 tracking-tighter" :class="animatedBalance >= 0 ? '' : 'text-rose-500'">
                                         {{ animatedBalance >= 0 ? '+' : '' }}{{ animatedBalance.toFixed(2) }}<span class="text-xl text-blue-500 ml-1">€</span>
+                                    </div>
+                                    <div class="mt-2 text-[11px] font-bold flex items-center gap-1" :class="forecast.save >= 0 ? 'text-green-500' : 'text-rose-500'">
+                                        Прогноз: {{ forecast.save >= 0 ? '+' : '' }}{{ forecast.save.toFixed(0) }} €
                                     </div>
                                 </div>
                                 <div class="text-right">
@@ -155,22 +159,37 @@
                                     <p class="text-[10px] text-muted mt-1 font-semibold">€ / день</p>
                                 </div>
                             </div>
+
+                            <div class="relative z-10 flex justify-between items-center pt-4 border-t" style="border-color: var(--border-color)">
+                                <div>
+                                    <span class="text-[9px] text-muted font-bold uppercase tracking-widest">Доходы</span>
+                                    <div class="text-base font-900 text-green-500 mt-0.5">+{{ monthIncome.toFixed(0) }} €</div>
+                                </div>
+                                <div class="w-px h-8 bg-white/10" :style="{ background: 'var(--border-color)' }"></div>
+                                <div class="text-right">
+                                    <span class="text-[9px] text-muted font-bold uppercase tracking-widest">Расходы</span>
+                                    <div class="text-base font-900 text-rose-500 mt-0.5">-{{ monthExpense.toFixed(0) }} €</div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mt-8 flex-1">
-                            <h2 class="text-[10px] text-muted font-bold uppercase tracking-widest mb-6 ml-4">Последние операции</h2>
+                            <h2 class="text-[10px] text-muted font-bold uppercase tracking-widest mb-6 ml-4 flex justify-between">
+                                Последние операции
+                                <span class="opacity-50">Свайп: Изменить 👉 / 👈 Удалить</span>
+                            </h2>
                             
                             <transition-group name="list" tag="div" class="space-y-4">
                                 <div v-for="t in filteredTxs.slice(0, 5)" :key="t.id" class="swipe-item">
                                     
                                     <div class="absolute inset-y-0 left-0 w-1/2 flex justify-start items-center px-6" :style="{ backgroundColor: 'var(--accent)', opacity: getSwipeOpacity(t.id, 'right') }">
-                                        <span class="text-white font-900 text-xs tracking-widest flex items-center gap-2 transition-transform duration-300" :style="{ transform: `scale(${getSwipeOpacity(t.id, 'right')})` }">
+                                        <span class="text-white font-900 text-xs tracking-widest flex items-center gap-2" :style="{ transform: `scale(${getSwipeOpacity(t.id, 'right')})` }">
                                             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                         </span>
                                     </div>
 
                                     <div class="absolute inset-y-0 right-0 w-1/2 flex justify-end items-center px-6 cursor-pointer" :style="{ backgroundColor: '#f43f5e', opacity: getSwipeOpacity(t.id, 'left'), pointerEvents: getSwipeOffset(t.id) < -40 ? 'auto' : 'none' }" @click="deleteTx(t.id)">
-                                        <span class="text-white font-900 text-xs tracking-widest flex items-center gap-2 transition-transform duration-300" :style="{ transform: `scale(${getSwipeOpacity(t.id, 'left')})` }">
+                                        <span class="text-white font-900 text-xs tracking-widest flex items-center gap-2" :style="{ transform: `scale(${getSwipeOpacity(t.id, 'left')})` }">
                                             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                         </span>
                                     </div>
@@ -198,7 +217,7 @@
                             </transition-group>
 
                             <button v-if="filteredTxs.length > 5" @click="openHistory" class="w-full mt-4 py-4 rounded-2xl bg-input border border-white/5 font-900 text-xs tracking-widest text-muted uppercase active:scale-95 transition-transform hover:text-blue-500">
-                                Показать все ({{ filteredTxs.length }})
+                                Все операции ({{ filteredTxs.length }})
                             </button>
                         </div>
                     </template>
@@ -208,15 +227,27 @@
             <transition name="slide-up">
                 <div v-if="showHistory" class="panel flex flex-col fixed inset-0 z-40 m-0 rounded-none sm:m-4 sm:rounded-2xl pb-24">
                     <div class="p-6 pb-2 border-b border-white/5">
-                        <div class="flex justify-between items-center mb-6">
+                        <div class="flex justify-between items-center mb-4">
                             <h2 class="font-900 text-xl tracking-tight">ИСТОРИЯ</h2>
                             <button @click="closeHistory" class="w-8 h-8 flex items-center justify-center bg-input rounded-full font-bold">✕</button>
                         </div>
                         
-                        <div class="space-y-4">
+                        <div class="space-y-3">
+                            <div class="flex gap-2">
+                                <div class="flex-1 relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 text-[10px] font-bold uppercase tracking-widest">От</span>
+                                    <input type="date" v-model="historyDateFrom" class="w-full bg-input rounded-xl pl-8 pr-2 py-2.5 font-bold outline-none focus:border-blue-500 text-xs transition-colors [color-scheme:dark]">
+                                </div>
+                                <div class="flex-1 relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 text-[10px] font-bold uppercase tracking-widest">До</span>
+                                    <input type="date" v-model="historyDateTo" class="w-full bg-input rounded-xl pl-8 pr-2 py-2.5 font-bold outline-none focus:border-blue-500 text-xs transition-colors [color-scheme:dark]">
+                                </div>
+                                <button v-if="historyDateFrom || historyDateTo || searchQuery || historyFilter !== 'all'" @click="resetFilters" class="px-3 rounded-xl bg-rose-500/10 text-rose-500 font-bold text-xs" title="Сбросить фильтры">✕</button>
+                            </div>
+
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 opacity-50">🔍</span>
-                                <input type="text" v-model="searchQuery" class="w-full bg-input rounded-xl pl-10 pr-4 py-3 font-bold outline-none focus:border-blue-500 text-sm transition-colors" placeholder="Поиск...">
+                                <input type="text" v-model="searchQuery" class="w-full bg-input rounded-xl pl-10 pr-4 py-2.5 font-bold outline-none focus:border-blue-500 text-sm transition-colors" placeholder="Поиск...">
                             </div>
                             
                             <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
@@ -270,7 +301,7 @@
                             </div>
                         </transition-group>
 
-                        <button v-if="historyLimit < searchedTxs.length" @click="historyLimit += 20" class="w-full py-4 rounded-2xl bg-input font-900 text-xs tracking-widest text-muted uppercase active:scale-95 transition-transform mt-4 mb-20">
+                        <button v-if="historyLimit < searchedTxs.length" @click="historyLimit += 20" class="w-full py-4 rounded-2xl bg-white/5 font-900 text-xs tracking-widest text-muted uppercase active:scale-95 transition-transform mt-4 mb-20">
                             Загрузить еще
                         </button>
                     </div>
@@ -390,20 +421,32 @@
                     initialCats = JSON.parse(localStorage.getItem('financeX_cats_v5')) || [];
                 } catch(e) {}
                 
-                const transactions = ref(Array.isArray(initialTxs) ? initialTxs : []);
+                // SANITIZER: Исправление дублирующихся ID из старого JSON
+                const seenIds = new Set();
+                const safeTxs = (Array.isArray(initialTxs) ? initialTxs : []).map(t => {
+                    if (seenIds.has(t.id)) t.id = Date.now() + Math.random(); // Если ID уже был, даем новый
+                    seenIds.add(t.id);
+                    return t;
+                });
+
+                const transactions = ref(safeTxs);
                 const categories = ref(initialCats.length ? initialCats : [...DEFAULT_CATS]);
                 const activeMonth = ref(new Date().toISOString().slice(0, 7));
                 const isLight = ref(localStorage.getItem('financeX_theme') === 'light');
                 const sessionMode = ref(false);
                 const showSettings = ref(false);
                 
+                // History State
                 const showHistory = ref(false);
                 const searchQuery = ref('');
                 const historyFilter = ref('all');
+                const historyDateFrom = ref('');
+                const historyDateTo = ref('');
                 const historyLimit = ref(20);
 
                 const currentStep = ref(1);
                 const mainInput = ref(null);
+                
                 const editingId = ref(null);
                 const wizard = ref({ type: 'expense', amount: '', category: '', name: '', date: '' });
                 const jsonMsg = ref('');
@@ -444,16 +487,27 @@
                     } catch(e) { return [{val: activeMonth.value, label: activeMonth.value}]; }
                 });
 
+                const activeMonthLabel = computed(() => {
+                    const m = availableMonths.value.find(m => m.val === activeMonth.value);
+                    return m ? m.label : activeMonth.value;
+                });
+
                 const filteredTxs = computed(() => transactions.value.filter(t => (t.date||'').startsWith(activeMonth.value)).sort((a,b) => (b.date||'').localeCompare(a.date||'')));
                 const monthIncome = computed(() => filteredTxs.value.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0));
                 const monthExpense = computed(() => filteredTxs.value.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0));
                 const monthBalance = computed(() => monthIncome.value - monthExpense.value);
 
+                // --- SEARCH & HISTORY LOGIC ---
                 const openHistory = () => {
                     searchQuery.value = ''; historyFilter.value = 'all'; historyLimit.value = 20;
+                    historyDateFrom.value = ''; historyDateTo.value = '';
                     showHistory.value = true; scrollToTop();
                 };
                 const closeHistory = () => { showHistory.value = false; };
+                const resetFilters = () => {
+                    searchQuery.value = ''; historyFilter.value = 'all';
+                    historyDateFrom.value = ''; historyDateTo.value = '';
+                };
 
                 const activeCategoriesUsed = computed(() => {
                     const used = new Set(filteredTxs.value.map(t => t.cat));
@@ -462,6 +516,10 @@
 
                 const searchedTxs = computed(() => {
                     let res = filteredTxs.value;
+                    
+                    if (historyDateFrom.value) res = res.filter(t => t.date >= historyDateFrom.value);
+                    if (historyDateTo.value) res = res.filter(t => t.date <= historyDateTo.value);
+
                     if (historyFilter.value === 'income') res = res.filter(t => t.amount > 0);
                     else if (historyFilter.value === 'expense') res = res.filter(t => t.amount < 0);
                     else if (historyFilter.value !== 'all') res = res.filter(t => t.cat === historyFilter.value);
@@ -477,16 +535,20 @@
                 watch(monthBalance, (newVal) => {
                     const start = animatedBalance.value;
                     const dist = newVal - start;
+                    const duration = 500;
                     let startT = null;
                     const animate = (t) => {
                         if (!startT) startT = t;
-                        const p = Math.min((t - startT) / 500, 1);
-                        animatedBalance.value = start + dist * (1 - Math.pow(1 - p, 4));
-                        if (p < 1) requestAnimationFrame(animate); else animatedBalance.value = newVal;
+                        const p = Math.min((t - startT) / duration, 1);
+                        const ease = 1 - Math.pow(1 - p, 4);
+                        animatedBalance.value = start + dist * ease;
+                        if (p < 1) requestAnimationFrame(animate);
+                        else animatedBalance.value = newVal;
                     };
                     requestAnimationFrame(animate);
                 }, { immediate: true });
 
+                // --- ИДЕАЛЬНЫЙ ДВУСТОРОННИЙ SWIPE ---
                 const swipeState = ref({});
                 const onTouchStart = (e, id) => {
                     if (!swipeState.value[id]) swipeState.value[id] = { offset: 0 };
@@ -567,7 +629,7 @@
                             const idx = transactions.value.findIndex(tx => tx.id === editingId.value);
                             if (idx !== -1) transactions.value[idx] = { ...transactions.value[idx], name, amount: amt, cat: wizard.value.category, date };
                         } else {
-                            transactions.value.unshift({ id: Date.now(), name, amount: amt, cat: wizard.value.category, date });
+                            transactions.value.unshift({ id: Date.now() + Math.random(), name, amount: amt, cat: wizard.value.category, date });
                         }
                         saveData(); sessionMode.value = false; editingId.value = null; scrollToTop();
                     }
@@ -588,7 +650,11 @@
                         try {
                             const p = JSON.parse(ev.target.result);
                             const existingIds = new Set(transactions.value.map(t => t.id));
-                            const newTxs = p.transactions.filter(t => !existingIds.has(t.id));
+                            // Санитизируем входящие ID (защита от дубликатов в самом импорте)
+                            const newTxs = p.transactions.filter(t => !existingIds.has(t.id)).map(t => {
+                                if(existingIds.has(t.id)) t.id = Date.now() + Math.random();
+                                existingIds.add(t.id); return t;
+                            });
                             transactions.value = [...transactions.value, ...newTxs].sort((a,b) => b.date.localeCompare(a.date));
                             saveData(); showSettings.value = false;
                         } catch(err) { alert('Ошибка загрузки файла'); }
@@ -613,7 +679,7 @@
                                 const amt = parseFloat(amtStr.replace(',', '.'));
                                 const name = cols[3] || cols[2] || 'Swedbank TX';
                                 if(!transactions.value.some(t => t.date === date && t.amount === amt && t.name === name)) {
-                                    transactions.value.unshift({ id: Date.now() + i, name, amount: amt, date, cat: 'Прочее' });
+                                    transactions.value.unshift({ id: Date.now() + Math.random(), name, amount: amt, date, cat: 'Прочее' });
                                     added++;
                                 }
                             }
@@ -627,21 +693,21 @@
 
                 const loadDemoData = () => {
                     const demo = []; const now = new Date(); const y = now.getFullYear(); const m = String(now.getMonth() + 1).padStart(2, '0');
-                    demo.push({ id: 1, name: 'Зарплата Google', amount: 4500, cat: 'Зарплата', date: `${y}-${m}-01` });
-                    demo.push({ id: 2, name: 'Аренда квартиры', amount: -1200, cat: 'Дом', date: `${y}-${m}-02` });
-                    demo.push({ id: 3, name: 'Prisma Supermarket', amount: -145.50, cat: 'Продукты', date: `${y}-${m}-05` });
-                    demo.push({ id: 4, name: 'Spotify & Netflix', amount: -21.98, cat: 'Подписки', date: `${y}-${m}-06` });
-                    demo.push({ id: 5, name: 'Wolt Delivery', amount: -34.00, cat: 'Рестораны', date: `${y}-${m}-08` });
-                    demo.push({ id: 6, name: 'Uber/Bolt', amount: -12.50, cat: 'Транспорт', date: `${y}-${m}-09` });
+                    demo.push({ id: Date.now()+1, name: 'Зарплата Google', amount: 4500, cat: 'Зарплата', date: `${y}-${m}-01` });
+                    demo.push({ id: Date.now()+2, name: 'Аренда квартиры', amount: -1200, cat: 'Дом', date: `${y}-${m}-02` });
+                    demo.push({ id: Date.now()+3, name: 'Prisma Supermarket', amount: -145.50, cat: 'Продукты', date: `${y}-${m}-05` });
+                    demo.push({ id: Date.now()+4, name: 'Spotify & Netflix', amount: -21.98, cat: 'Подписки', date: `${y}-${m}-06` });
+                    demo.push({ id: Date.now()+5, name: 'Wolt Delivery', amount: -34.00, cat: 'Рестораны', date: `${y}-${m}-08` });
+                    demo.push({ id: Date.now()+6, name: 'Uber/Bolt', amount: -12.50, cat: 'Транспорт', date: `${y}-${m}-09` });
                     transactions.value = demo.sort((a,b) => b.date.localeCompare(a.date));
                     activeMonth.value = `${y}-${m}`; saveData(); showSettings.value = false;
                 };
 
                 return { 
-                    appLoaded, transactions, categories, activeMonth, availableMonths, filteredTxs,
+                    appLoaded, transactions, categories, activeMonth, availableMonths, activeMonthLabel, filteredTxs,
                     monthIncome, monthExpense, monthBalance, animatedBalance, sparklinePoints, forecast, smartInsight,
                     sessionMode, showSettings, currentStep, wizard, mainInput, editingId, isLight, toggleTheme,
-                    showHistory, searchQuery, historyFilter, historyLimit, searchedTxs, activeCategoriesUsed, openHistory, closeHistory,
+                    showHistory, searchQuery, historyFilter, historyDateFrom, historyDateTo, historyLimit, searchedTxs, activeCategoriesUsed, openHistory, closeHistory, resetFilters,
                     startSession, editTx, selectCategory, nextStep, cancelSession, deleteTx, getCatIcon, getCatColor, formatDate, 
                     swipeState, onTouchStart, onTouchMove, onTouchEnd, getSwipeOffset, getSwipeOpacity, isSwiping,
                     exportJSON, triggerJSON, importJSON, jsonMsg, triggerCSV, importCSV, importMsg, hardReset, loadDemoData, scrollToTop
