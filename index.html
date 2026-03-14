@@ -7,6 +7,7 @@
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="FlowFinance">
     <meta name="theme-color" content="#020617">
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./logo.png">
@@ -45,8 +46,8 @@
         <div v-if="appLocked" class="lock-overlay">
             <div class="text-center p-8">
                 <div class="text-6xl mb-6">🔐</div>
-                <h2 class="text-2xl font-900 mb-10">FlowFinance</h2>
-                <button @click="unlockApp" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-900 uppercase tracking-widest active:scale-95 transition-all">Разблокировать</button>
+                <h2 class="text-2xl font-900 mb-10 tracking-tighter">Flow<span class="text-blue-500">Finance</span></h2>
+                <button @click="unlockApp" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-900 uppercase tracking-widest active:scale-95 transition-all shadow-lg">Разблокировать</button>
             </div>
         </div>
 
@@ -58,14 +59,14 @@
                         <path d="M 55 25 L 80 25 L 80 50" stroke="#10b981" stroke-width="10" />
                     </svg>
                 </div>
-                <h1 class="text-3xl font-900">Flow<span class="text-blue-500">Finance</span></h1>
+                <h1 class="text-3xl font-900 tracking-tighter">Flow<span class="text-blue-500">Finance</span></h1>
             </div>
         </transition>
 
         <div v-show="appLoaded && !appLocked" class="contents">
             <header class="flex justify-between items-center py-4">
                 <div class="flex flex-col">
-                    <h1 class="text-2xl font-900 mb-3">Flow<span class="text-blue-500">Finance</span></h1>
+                    <h1 class="text-2xl font-900 tracking-tighter mb-3">Flow<span class="text-blue-500">Finance</span></h1>
                     <div class="relative inline-flex items-center w-max" v-if="transactions.length > 0">
                         <select v-model="activeMonth" class="absolute inset-0 w-full h-full opacity-0 z-10">
                             <option v-for="m in availableMonths" :key="m.val" :value="m.val">{{ m.label }}</option>
@@ -75,10 +76,13 @@
                         </div>
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <button v-if="user" @click="showSettings = true" class="w-10 h-10 rounded-full border-2 border-blue-500/30 overflow-hidden"><img :src="user.photoURL" class="w-full h-full object-cover"></button>
-                    <button @click="toggleTheme" class="w-10 h-10 rounded-full panel flex items-center justify-center">{{ isLight ? '🌙' : '☀️' }}</button>
-                    <button v-if="!user" @click="showSettings = true" class="w-10 h-10 rounded-full panel flex items-center justify-center">⚙️</button>
+                <div class="flex gap-2 self-start mt-1">
+                    <button v-if="user" @click="showSettings = true" class="w-10 h-10 rounded-full border-2 border-blue-500/30 overflow-hidden shadow-sm">
+                        <img v-if="user.photoURL" :src="user.photoURL" class="w-full h-full object-cover">
+                        <div v-else class="w-full h-full flex items-center justify-center bg-blue-600 text-white font-bold text-xs">{{ user.email[0].toUpperCase() }}</div>
+                    </button>
+                    <button @click="toggleTheme" class="w-10 h-10 rounded-full panel flex items-center justify-center text-xl active:scale-90 transition-transform">{{ isLight ? '🌙' : '☀️' }}</button>
+                    <button v-if="!user" @click="showSettings = true" class="w-10 h-10 rounded-full panel flex items-center justify-center active:scale-90 transition-transform">⚙️</button>
                 </div>
             </header>
 
@@ -91,12 +95,12 @@
                         <div class="panel p-6 relative overflow-hidden">
                             <div class="relative z-10 flex justify-between mb-6">
                                 <div>
-                                    <p class="text-[10px] text-muted font-bold uppercase mb-1">Баланс месяца</p>
-                                    <div class="text-4xl font-900" :class="animatedBalance >= 0 ? '' : 'text-rose-500'">{{ animatedBalance.toFixed(2) }}€</div>
+                                    <p class="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Баланс месяца</p>
+                                    <div class="text-4xl font-900 tracking-tighter" :class="animatedBalance >= 0 ? '' : 'text-rose-500'">{{ animatedBalance.toFixed(2) }}<span class="text-xl text-blue-500 ml-1">€</span></div>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-[10px] text-muted font-bold uppercase mb-1">Трата в день</p>
-                                    <div class="text-xl font-900">{{ forecast.daily.toFixed(0) }}€</div>
+                                    <p class="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Трата / день</p>
+                                    <div class="text-xl font-900 tracking-tighter">{{ forecast.daily.toFixed(0) }}€</div>
                                 </div>
                             </div>
                             <div class="relative z-10 flex justify-between pt-4 border-t border-white/5">
@@ -106,62 +110,88 @@
                         </div>
 
                         <div class="mt-8">
-                            <h2 class="text-[10px] text-muted font-bold uppercase mb-4 ml-4">Последние операции</h2>
+                            <h2 class="text-[10px] text-muted font-bold uppercase tracking-widest mb-4 ml-4">Последние операции</h2>
                             <transition-group name="list" tag="div" class="space-y-3">
                                 <div v-for="t in filteredTxs.slice(0, 5)" :key="t.id" class="swipe-item">
                                     <div class="absolute inset-y-0 right-0 w-20 flex justify-center items-center bg-rose-500 text-white font-bold text-[10px]" @click="deleteTx(t.id)">УДАЛИТЬ</div>
                                     <div class="panel p-4 relative flex justify-between items-center w-full" :style="{ transform: `translateX(${getSwipeOffset(t.id)}px)` }" @touchstart="onTouchStart($event, t.id)" @touchmove="onTouchMove($event, t.id)" @touchend="onTouchEnd($event, t.id)">
                                         <div class="flex items-center gap-3">
                                             <div class="text-2xl">{{ getCatIcon(t.cat) }}</div>
-                                            <div><h3 class="font-900 text-sm">{{ t.name }}</h3><p class="text-[9px] text-muted">{{ formatDate(t.date) }}</p></div>
+                                            <div><h3 class="font-900 text-sm leading-tight">{{ t.name }}</h3><p class="text-[9px] font-bold text-muted mt-1">{{ formatDate(t.date) }}</p></div>
                                         </div>
-                                        <div class="font-900" :class="t.amount > 0 ? 'text-green-500' : ''">{{ t.amount > 0 ? '+' : '' }}{{ Math.abs(t.amount).toFixed(2) }}€</div>
+                                        <div class="font-900 text-base" :class="t.amount > 0 ? 'text-green-500' : ''">{{ t.amount > 0 ? '+' : '' }}{{ Math.abs(t.amount).toFixed(2) }}€</div>
                                     </div>
                                 </div>
                             </transition-group>
-                            <button @click="showHistory = true" class="w-full mt-4 py-3 text-muted font-bold text-[10px] uppercase tracking-widest">Вся история ({{ filteredTxs.length }})</button>
+                            <button @click="showHistory = true" class="w-full mt-4 py-3 text-muted font-bold text-[10px] uppercase tracking-widest active:scale-95 transition-all">История ({{ filteredTxs.length }})</button>
                         </div>
                     </template>
                 </div>
             </transition>
 
             <transition name="slide-up">
-                <div v-if="sessionMode" class="panel p-6 flex flex-col fixed inset-x-4 top-20 z-50 min-h-[60vh]">
-                    <div class="flex justify-between mb-8"><div class="flex gap-1"><div v-for="s in 3" :class="s <= currentStep ? 'bg-blue-500' : 'bg-white/10'" class="w-8 h-1 rounded-full"></div></div><button @click="sessionMode = false">Отмена</button></div>
-                    <div v-if="currentStep === 1"><div class="flex justify-center gap-4 mb-8"><button @click="wizard.type = 'expense'" :class="wizard.type === 'expense' ? 'bg-white text-black' : 'bg-white/5'" class="px-6 py-2 rounded-full font-bold">Расход</button><button @click="wizard.type = 'income'" :class="wizard.type === 'income' ? 'bg-white text-black' : 'bg-white/5'" class="px-6 py-2 rounded-full font-bold">Доход</button></div><input type="number" v-model.number="wizard.amount" class="input-huge" placeholder="0" autofocus></div>
-                    <div v-if="currentStep === 2" class="grid grid-cols-3 gap-2 overflow-y-auto max-h-[40vh] p-2">
-                        <button v-for="c in categories" @click="selectCategory(c.name)" class="bg-white/5 p-4 rounded-2xl flex flex-col items-center gap-1 active:scale-95"><span class="text-2xl">{{ c.icon }}</span><span class="text-[9px] font-bold uppercase truncate w-full">{{ c.name }}</span></button>
+                <div v-if="sessionMode" class="panel p-6 flex flex-col fixed inset-x-4 top-20 z-50 min-h-[65vh] shadow-2xl">
+                    <div class="flex justify-between items-center mb-8">
+                        <div class="flex gap-1"><div v-for="s in 3" :class="s <= currentStep ? 'bg-blue-500' : 'bg-white/10'" class="w-8 h-1 rounded-full transition-all"></div></div>
+                        <button @click="sessionMode = false" class="text-[10px] font-bold text-muted uppercase tracking-widest">Отмена</button>
                     </div>
-                    <div v-if="currentStep === 3" class="space-y-4">
-                        <input type="text" v-model="wizard.name" class="w-full bg-white/5 p-4 rounded-xl font-bold" placeholder="Название">
-                        <input type="date" v-model="wizard.date" class="w-full bg-white/5 p-4 rounded-xl font-bold">
+                    <div v-if="currentStep === 1" class="flex-1 flex flex-col justify-center">
+                        <div class="flex justify-center gap-4 mb-8">
+                            <button @click="wizard.type = 'expense'" :class="wizard.type === 'expense' ? 'bg-white text-black' : 'bg-white/5'" class="px-6 py-2 rounded-full font-bold text-xs tracking-widest uppercase">Расход</button>
+                            <button @click="wizard.type = 'income'" :class="wizard.type === 'income' ? 'bg-white text-black' : 'bg-white/5'" class="px-6 py-2 rounded-full font-bold text-xs tracking-widest uppercase">Доход</button>
+                        </div>
+                        <input type="number" v-model.number="wizard.amount" class="input-huge" placeholder="0" autofocus>
                     </div>
-                    <button v-if="currentStep !== 2" @click="nextStep" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-900 mt-auto shadow-lg shadow-blue-500/20">{{ currentStep === 3 ? 'СОХРАНИТЬ' : 'ДАЛЕЕ' }}</button>
+                    <div v-if="currentStep === 2" class="grid grid-cols-3 gap-3 overflow-y-auto max-h-[45vh] p-2 no-scrollbar">
+                        <button v-for="c in categories" @click="selectCategory(c.name)" class="bg-white/5 p-4 rounded-2xl flex flex-col items-center gap-1 active:scale-95 transition-transform border border-transparent hover:border-blue-500/30">
+                            <span class="text-3xl mb-1">{{ c.icon }}</span><span class="text-[9px] font-bold uppercase truncate w-full text-center">{{ c.name }}</span>
+                        </button>
+                    </div>
+                    <div v-if="currentStep === 3" class="space-y-6 flex-1 flex flex-col justify-center">
+                        <div><label class="text-[9px] font-bold text-muted uppercase tracking-widest pl-4">Название</label><input type="text" v-model="wizard.name" class="w-full mt-2 bg-white/5 p-4 rounded-xl font-bold border border-white/5" :placeholder="wizard.cat"></div>
+                        <div><label class="text-[9px] font-bold text-muted uppercase tracking-widest pl-4">Дата</label><input type="date" v-model="wizard.date" class="w-full mt-2 bg-white/5 p-4 rounded-xl font-bold border border-white/5 [color-scheme:dark]"></div>
+                    </div>
+                    <button v-if="currentStep !== 2" @click="nextStep" class="w-full py-5 bg-blue-600 text-white rounded-2xl font-900 tracking-widest uppercase shadow-lg shadow-blue-500/20 active:scale-95 transition-all mt-4">ДАЛЕЕ</button>
                 </div>
             </transition>
 
             <transition name="slide-up">
-                <div v-if="showSettings" class="panel p-6 fixed inset-x-4 top-20 z-50">
-                    <div class="flex justify-between mb-8"><h2 class="font-900">АККАУНТ</h2><button @click="showSettings = false">✕</button></div>
-                    <div v-if="!user" class="space-y-4">
-                        <input type="email" v-model="authForm.email" class="w-full bg-white/5 p-4 rounded-xl" placeholder="Email">
-                        <input type="password" v-model="authForm.pass" class="w-full bg-white/5 p-4 rounded-xl" placeholder="Пароль">
-                        <div class="flex gap-2"><button @click="loginEmail" class="flex-1 py-4 bg-blue-600 rounded-xl font-bold">Войти</button><button @click="regEmail" class="flex-1 py-4 bg-white/5 rounded-xl font-bold">Регистрация</button></div>
-                        <button @click="loginGoogle" class="w-full py-4 bg-white text-black rounded-xl font-bold">Войти через Google</button>
+                <div v-if="showSettings" class="panel p-6 fixed inset-x-4 top-20 z-50 shadow-2xl">
+                    <div class="flex justify-between items-center mb-8"><h2 class="font-900 tracking-tighter text-xl">АККАУНТ</h2><button @click="showSettings = false" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center font-bold">✕</button></div>
+                    
+                    <div v-if="!user" class="space-y-6 text-center">
+                        <div class="text-5xl mb-2">🌍</div>
+                        <h3 class="font-900 text-sm">Облачная синхронизация</h3>
+                        <p class="text-muted text-xs leading-relaxed px-4">Войдите, чтобы ваши финансы были доступны на всех ваших устройствах.</p>
+                        <button @click="loginGoogle" class="w-full py-4 bg-white text-black rounded-2xl font-900 tracking-widest uppercase flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-all">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" class="w-5 h-5"> Войти через Google
+                        </button>
                     </div>
-                    <div v-else class="text-center space-y-4">
-                        <h3 class="font-bold">{{ user.email }}</h3>
-                        <div class="flex justify-between p-4 bg-white/5 rounded-xl"><span>Защита входа</span><button @click="toggleLock" class="w-10 h-5 rounded-full relative" :class="isLockEnabled ? 'bg-blue-500' : 'bg-white/10'"><div class="w-3 h-3 bg-white rounded-full absolute top-1 transition-all" :class="isLockEnabled ? 'right-1' : 'left-1'"></div></button></div>
-                        <button @click="logout" class="w-full py-3 text-rose-500 font-bold">Выйти</button>
+                    <div v-else class="text-center space-y-6">
+                        <img :src="user.photoURL" class="w-20 h-20 rounded-full mx-auto border-4 border-blue-500/20 p-1">
+                        <div>
+                            <h3 class="font-900 text-base">{{ user.displayName }}</h3>
+                            <p class="text-muted text-[10px]">{{ user.email }}</p>
+                        </div>
+                        <div class="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <span class="text-xs font-bold text-muted uppercase tracking-widest">Защита входа</span>
+                            <button @click="toggleLock" class="w-12 h-6 rounded-full relative transition-all" :class="isLockEnabled ? 'bg-blue-600' : 'bg-white/10'">
+                                <div class="w-4 h-4 bg-white rounded-full absolute top-1 transition-all shadow-sm" :class="isLockEnabled ? 'right-1' : 'left-1'"></div>
+                            </button>
+                        </div>
+                        <button @click="logout" class="w-full py-4 text-rose-500 font-900 text-[10px] uppercase tracking-widest border border-rose-500/20 rounded-xl">Выйти из аккаунта</button>
                     </div>
                 </div>
             </transition>
 
-            <button @click="startSession" class="fixed bottom-8 right-6 w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xl active:scale-90 transition-transform"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg></button>
+            <button @click="startSession" class="fixed bottom-8 right-6 w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-[0_10px_25px_rgba(59,130,246,0.5)] active:scale-90 transition-transform z-40">
+                <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+            </button>
         </div>
     </div>
 
     <script>
+        // CONFIG
         const firebaseConfig = {
           apiKey: "AIzaSyBQywx3tIsJE1l5NiV24IPd5flsejgtDNA",
           authDomain: "flowfinance-875b2.firebaseapp.com",
@@ -182,9 +212,12 @@
             setup() {
                 const appLoaded = ref(false), isLockEnabled = ref(localStorage.getItem('isLockEnabled')==='true'), appLocked = ref(isLockEnabled.value), user = ref(null);
                 const transactions = ref([]), activeMonth = ref(new Date().toISOString().slice(0, 7)), isLight = ref(localStorage.getItem('theme')==='light');
-                const sessionMode = ref(false), showSettings = ref(false), showHistory = ref(false), currentStep = ref(1), wizard = ref({}), authForm = ref({});
+                const sessionMode = ref(false), showSettings = ref(false), showHistory = ref(false), currentStep = ref(1), wizard = ref({});
 
-                const categories = [{name:'Продукты', icon:'🛒'}, {name:'Транспорт', icon:'⛽'}, {name:'Рестораны', icon:'🍕'}, {name:'Зарплата', icon:'💰'}, {name:'Подписки', icon:'📱'}, {name:'Дом', icon:'🏠'}, {name:'Прочее', icon:'📦'}];
+                const categories = [
+                    {name:'Продукты', icon:'🛒'}, {name:'Транспорт', icon:'⛽'}, {name:'Рестораны', icon:'🍕'}, 
+                    {name:'Зарплата', icon:'💰'}, {name:'Подписки', icon:'📱'}, {name:'Дом', icon:'🏠'}, {name:'Прочее', icon:'📦'}
+                ];
 
                 onMounted(() => {
                     auth.onAuthStateChanged(u => {
@@ -209,7 +242,15 @@
                 const monthIncome = computed(() => transactions.value.filter(t => t.date.startsWith(activeMonth.value) && t.amount > 0).reduce((s,t)=>s+t.amount,0));
                 const monthExpense = computed(() => transactions.value.filter(t => t.date.startsWith(activeMonth.value) && t.amount < 0).reduce((s,t)=>s+Math.abs(t.amount),0));
                 const monthBalance = computed(() => monthIncome.value - monthExpense.value);
-                watch(monthBalance, v => { let start = animatedBalance.value; const animate = t => { animatedBalance.value += (v - animatedBalance.value) * 0.1; if(Math.abs(v - animatedBalance.value) > 0.1) requestAnimationFrame(animate); else animatedBalance.value = v; }; animate(); }, {immediate:true});
+                
+                watch(monthBalance, (v) => {
+                    let start = animatedBalance.value;
+                    const animate = () => {
+                        const step = (v - animatedBalance.value) * 0.1;
+                        if(Math.abs(step) < 0.01) animatedBalance.value = v;
+                        else { animatedBalance.value += step; requestAnimationFrame(animate); }
+                    }; animate();
+                }, {immediate:true});
 
                 const swipeState = ref({});
                 const onTouchStart = (e, id) => { swipeState.value[id] = { startX: e.touches[0].clientX, offset: swipeState.value[id]?.offset || 0 }; };
@@ -221,19 +262,25 @@
                 const selectCategory = c => { wizard.value.cat = c; wizard.value.name = c; currentStep.value = 3; };
                 const nextStep = () => { if(currentStep.value===1 && wizard.value.amount > 0) currentStep.value = 2; else if(currentStep.value===3) { transactions.value.unshift({ id: Date.now(), ...wizard.value, amount: wizard.value.type==='expense' ? -wizard.value.amount : wizard.value.amount }); saveData(); sessionMode.value = false; } };
 
-                const loginGoogle = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-                const logout = () => auth.signOut();
+                const loginGoogle = () => {
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    auth.signInWithRedirect(provider); // Изменено на Redirect для мобильных устройств
+                };
+                const logout = () => { if(confirm('Выйти?')) auth.signOut(); };
                 const toggleLock = () => { isLockEnabled.value = !isLockEnabled.value; localStorage.setItem('isLockEnabled', isLockEnabled.value); };
                 const unlockApp = () => appLocked.value = false;
-                const toggleTheme = () => { isLight.value = !isLight.value; document.body.classList.toggle('light-theme', isLight.value); };
+                const toggleTheme = () => { isLight.value = !isLight.value; localStorage.setItem('theme', isLight.value ? 'light' : 'dark'); document.body.classList.toggle('light-theme', isLight.value); };
 
                 return { 
-                    appLoaded, appLocked, user, transactions, activeMonth, animatedBalance, monthIncome, monthExpense, forecast: {daily:0}, 
-                    availableMonths: [{val:activeMonth.value, label:'Март 2026'}], activeMonthLabel: 'Март 2026', 
-                    filteredTxs: transactions, sessionMode, currentStep, wizard, categories, showSettings, authForm, isLockEnabled,
+                    appLoaded, appLocked, user, transactions, activeMonth, animatedBalance, monthIncome, monthExpense,
+                    activeMonthLabel: computed(() => activeMonth.value.split('-').reverse().join('.')), 
+                    availableMonths: computed(() => Array.from(new Set(transactions.value.map(t=>t.date.slice(0,7)))).sort().reverse().map(v=>({val:v, label:v}))),
+                    filteredTxs: computed(() => transactions.value.filter(t=>t.date.startsWith(activeMonth.value))),
+                    forecast: computed(() => { const daily = monthExpense.value / 30; return {daily}; }),
+                    sessionMode, currentStep, wizard, categories, showSettings, isLockEnabled, showHistory,
                     startSession, selectCategory, nextStep, deleteTx: id => { transactions.value = transactions.value.filter(t=>t.id!==id); saveData(); },
                     onTouchStart, onTouchMove, onTouchEnd, getSwipeOffset, loginGoogle, logout, toggleLock, unlockApp, toggleTheme, isLight,
-                    getCatIcon: c => categories.find(cat=>cat.name===c)?.icon || '📦', formatDate: d => d, getCatColor: c => '#3b82f6'
+                    getCatIcon: c => categories.find(cat=>cat.name===c)?.icon || '📦', formatDate: d => d.split('-').reverse().join('.'), getCatColor: c => '#3b82f6'
                 };
             }
         }).mount('#app');
