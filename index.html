@@ -3,33 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
     <title>FINANCE.X</title>
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Finance.X">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Black_square.jpg/1024px-Black_square.jpg">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
     <style>
-        /* ТОЧНЫЕ ЦВЕТА И ПАРАМЕТРЫ ИЗ BABYFLOW X */
-        :root { --neon-blue: #3b82f6; --neon-green: #10b981; --neon-rose: #f43f5e; --bg-oled: #000000; --panel: #111111; }
+        :root { --neon-blue: #3b82f6; --bg-oled: #000000; --panel: #111111; }
         body { background: var(--bg-oled); color: #f8fafc; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
-        
         [v-cloak] { display: none !important; }
-        
-        /* Custom UI Elements (BabyFlow Exact Match) */
         .panel { background: var(--panel); border: 1px solid rgba(255,255,255,0.05); border-radius: 2rem; }
         .glowing-text { text-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
         .glowing-green { text-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
         .glowing-rose { text-shadow: 0 0 20px rgba(244, 63, 94, 0.4); }
-        
         .input-huge { background: transparent; border: none; font-size: 3.5rem; font-weight: 900; text-align: center; color: white; width: 100%; outline: none; caret-color: var(--neon-blue); }
-        .input-huge::placeholder { color: #333; }
-        
         ::-webkit-scrollbar { display: none; }
-        
-        /* Fluid Transitions */
-        .slide-up-enter-active, .slide-up-leave-active { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .slide-up-enter-active, .slide-up-leave-active { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(40px) scale(0.95); }
-        .timeline-dot { box-shadow: 0 0 10px currentColor; }
     </style>
 </head>
 <body class="antialiased pb-32">
@@ -53,14 +51,12 @@
 
         <transition name="slide-up">
             <div v-if="!sessionMode && !showSettings" class="space-y-4">
-                
                 <div class="panel p-6 relative overflow-hidden">
                     <div class="absolute bottom-0 left-0 right-0 h-1/2 opacity-20 pointer-events-none">
                         <svg viewBox="0 0 100 30" preserveAspectRatio="none" class="w-full h-full text-blue-500">
                             <polyline fill="none" stroke="currentColor" stroke-width="2" :points="sparklinePoints" stroke-linejoin="round" stroke-linecap="round"/>
                         </svg>
                     </div>
-
                     <div class="relative z-10 flex justify-between items-start">
                         <div>
                             <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Баланс месяца</p>
@@ -68,9 +64,6 @@
                                 {{ monthBalance >= 0 ? '+' : '' }}{{ monthBalance.toFixed(2) }}<span class="text-xl text-blue-500 ml-1">€</span>
                             </div>
                             <div class="mt-2 text-xs font-bold flex items-center gap-1" :class="forecast.save >= 0 ? 'text-green-400' : 'text-rose-400'">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                    <path :d="forecast.save >= 0 ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'"/>
-                                </svg>
                                 Прогноз: {{ forecast.save >= 0 ? '+' : '' }}{{ forecast.save.toFixed(0) }} €
                             </div>
                         </div>
@@ -113,17 +106,14 @@
 
                 <div class="panel p-6 mt-4 flex-1">
                     <h2 class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-6">Хронология</h2>
-                    
                     <div v-if="filteredTxs.length === 0" class="text-center py-6 opacity-30">
                         <span class="text-4xl">👻</span>
                         <p class="text-xs font-bold mt-2 uppercase tracking-widest">Нет данных</p>
                     </div>
-
                     <div class="relative border-l-2 border-white/10 ml-3 space-y-8">
                         <div v-for="t in filteredTxs.slice(0, 15)" :key="t.id" class="relative pl-6 group">
                             <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-black border-4 timeline-dot" 
                                  :style="{ borderColor: t.amount > 0 ? '#10b981' : getCatColor(t.cat), color: t.amount > 0 ? '#10b981' : getCatColor(t.cat) }"></div>
-                            
                             <div class="flex justify-between items-start">
                                 <div>
                                     <h3 class="font-900 text-lg leading-none" :class="t.amount > 0 ? 'text-green-400' : 'text-white'">
@@ -150,44 +140,37 @@
                     <div class="flex gap-1">
                         <div v-for="step in 3" :key="step" class="h-1.5 w-6 rounded-full transition-colors duration-300" :class="step <= currentStep ? 'bg-blue-500' : 'bg-white/10'"></div>
                     </div>
-                    <button @click="cancelSession" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Отмена</button>
+                    <button @click="sessionMode = false" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Отмена</button>
                 </div>
-
                 <div class="flex-1 flex flex-col justify-center min-h-[300px]">
                     <div v-if="currentStep === 1" class="w-full">
                         <div class="flex justify-center gap-2 mb-8 bg-black p-1 rounded-full border border-white/5 w-max mx-auto">
                             <button @click="wizard.type = 'expense'" class="px-6 py-2.5 rounded-full font-800 text-xs transition-all" :class="wizard.type === 'expense' ? 'bg-white text-black' : 'text-gray-500'">РАСХОД</button>
                             <button @click="wizard.type = 'income'" class="px-6 py-2.5 rounded-full font-800 text-xs transition-all" :class="wizard.type === 'income' ? 'bg-white text-black' : 'text-gray-500'">ДОХОД</button>
                         </div>
-                        <h2 class="text-center text-sm font-bold text-blue-400 uppercase tracking-widest mb-6">Сумма операции</h2>
                         <input type="number" step="0.01" v-model.number="wizard.amount" ref="mainInput" class="input-huge" placeholder="0" autofocus>
-                        <p class="text-center text-gray-500 font-semibold text-xs mt-4">Евро (€)</p>
                     </div>
-
-                    <div v-if="currentStep === 2" class="w-full fade-enter-active">
+                    <div v-if="currentStep === 2" class="w-full">
                         <h2 class="text-center text-sm font-bold text-blue-400 uppercase tracking-widest mb-6">Категория</h2>
-                        <div class="grid grid-cols-4 gap-3">
+                        <div class="grid grid-cols-3 gap-3">
                             <button v-for="c in categories" :key="c.name" @click="selectCategory(c.name)" 
-                                    class="flex flex-col items-center justify-center p-4 rounded-2xl border border-white/5 bg-white/5 active:scale-95 transition-transform hover:bg-white/10">
-                                <span class="text-2xl mb-2">{{ c.icon }}</span>
-                                <span class="text-[9px] font-bold text-gray-400 truncate w-full text-center tracking-wide">{{ c.name }}</span>
+                                    class="flex flex-col items-center justify-center py-5 px-2 rounded-2xl border border-white/5 bg-white/5 active:scale-95 transition-transform hover:bg-white/10">
+                                <span class="text-3xl mb-2">{{ c.icon }}</span>
+                                <span class="text-[10px] font-bold text-gray-400 w-full text-center tracking-wider leading-tight">{{ c.name }}</span>
                             </button>
                         </div>
                     </div>
-
-                    <div v-if="currentStep === 3" class="w-full space-y-6 fade-enter-active">
-                        <h2 class="text-center text-sm font-bold text-blue-400 uppercase tracking-widest mb-6">Детали</h2>
+                    <div v-if="currentStep === 3" class="w-full space-y-6">
                         <div>
                             <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-4">Название (Опционально)</label>
-                            <input type="text" v-model="wizard.name" class="w-full mt-2 bg-black border border-white/10 rounded-2xl p-4 text-white font-bold outline-none focus:border-blue-500 transition-colors text-lg" :placeholder="wizard.category">
+                            <input type="text" v-model="wizard.name" class="w-full mt-2 bg-black border border-white/10 rounded-2xl p-4 text-white font-bold outline-none focus:border-blue-500 text-lg" :placeholder="wizard.category">
                         </div>
                         <div>
                             <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-4">Дата</label>
-                            <input type="date" v-model="wizard.date" class="w-full mt-2 bg-black border border-white/10 rounded-2xl p-4 text-white font-bold outline-none focus:border-blue-500 transition-colors [color-scheme:dark] text-lg">
+                            <input type="date" v-model="wizard.date" class="w-full mt-2 bg-black border border-white/10 rounded-2xl p-4 text-white font-bold outline-none focus:border-blue-500 [color-scheme:dark] text-lg">
                         </div>
                     </div>
                 </div>
-
                 <button v-if="currentStep !== 2" @click="nextStep" class="w-full py-5 rounded-2xl bg-blue-600 text-white font-900 text-lg mt-8 active:scale-95 transition-transform shadow-[0_10px_30px_rgba(59,130,246,0.3)]">
                     {{ currentStep === 3 ? 'СОХРАНИТЬ' : 'ДАЛЕЕ' }}
                 </button>
@@ -200,18 +183,29 @@
                     <h2 class="font-900 text-xl tracking-tight">НАСТРОЙКИ</h2>
                     <button @click="showSettings = false" class="w-8 h-8 flex items-center justify-center bg-white/10 rounded-full font-bold">✕</button>
                 </div>
-
                 <div class="space-y-6">
+                    
+                    <div class="p-5 bg-black rounded-2xl border border-blue-500/30 relative overflow-hidden">
+                        <div class="absolute inset-0 bg-blue-500/10 pointer-events-none"></div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="text-2xl">✨</span>
+                                <h3 class="font-900 text-sm text-blue-400">Презентация SaaS</h3>
+                            </div>
+                            <p class="text-[11px] text-gray-400 mb-5 font-semibold">Наполнить приложение красивыми тестовыми данными для показа клиентам (удалит текущие).</p>
+                            <button @click="loadDemoData" class="w-full py-4 bg-blue-600 text-white rounded-xl font-900 text-xs tracking-widest uppercase active:scale-95 transition-transform shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+                                Включить Демо
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="p-5 bg-black rounded-2xl border border-white/5">
                         <div class="flex items-center gap-3 mb-3">
                             <span class="text-2xl">🏦</span>
                             <h3 class="font-900 text-sm">Импорт Swedbank (CSV)</h3>
                         </div>
-                        <p class="text-[11px] text-gray-500 mb-5 font-semibold">Загрузите банковскую выписку в формате CSV. Умный алгоритм сам распределит категории и отсеет дубликаты.</p>
                         <input type="file" id="csvFile" accept=".csv" @change="importCSV" class="hidden">
-                        <button @click="triggerCSV" class="w-full py-4 bg-white/10 rounded-xl font-900 text-xs tracking-widest uppercase active:scale-95 transition-transform border border-white/10 hover:bg-white/20">
-                            Выбрать файл
-                        </button>
+                        <button @click="triggerCSV" class="w-full py-4 bg-white/10 rounded-xl font-900 text-xs tracking-widest uppercase active:scale-95 transition-transform border border-white/10">Выбрать файл</button>
                         <p v-if="importMsg" class="text-[10px] text-green-400 mt-3 text-center font-bold">{{ importMsg }}</p>
                     </div>
 
@@ -220,10 +214,7 @@
                             <span class="text-2xl">⚠️</span>
                             <h3 class="font-900 text-sm text-rose-500">Сброс данных</h3>
                         </div>
-                        <p class="text-[11px] text-gray-500 mb-5 font-semibold">Удаление всей истории транзакций с устройства.</p>
-                        <button @click="hardReset" class="w-full py-4 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-xl font-900 text-xs tracking-widest uppercase active:scale-95 transition-transform hover:bg-rose-500/20">
-                            Очистить базу
-                        </button>
+                        <button @click="hardReset" class="w-full py-4 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-xl font-900 text-xs tracking-widest uppercase active:scale-95 transition-transform">Очистить базу</button>
                     </div>
                 </div>
             </div>
@@ -235,15 +226,18 @@
                 ВНЕСТИ
             </button>
         </div>
-
     </div>
 
     <script>
         const { createApp, ref, computed, nextTick } = Vue;
 
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
+        }
+
         createApp({
             setup() {
-                // CONSTANTS & CATEGORIES (Inherited from Finance.io but styled for BabyFlow)
                 const DEFAULT_CATS = [
                     {name:'Продукты', icon:'🛒', color:'#f97316'}, {name:'Транспорт', icon:'⛽', color:'#3b82f6'},
                     {name:'Аптека', icon:'💊', color:'#f43f5e'}, {name:'Рестораны', icon:'🍕', color:'#facc15'},
@@ -254,32 +248,27 @@
                     {name:'Прочее', icon:'📦', color:'#6b7280'}
                 ];
 
-                // STORAGE
-                const transactions = ref(JSON.parse(localStorage.getItem('financeX_oled')) || []);
-                const budgets = ref(JSON.parse(localStorage.getItem('financeX_budgets')) || {'Продукты': 400, 'Транспорт': 100}); 
+                const transactions = ref(JSON.parse(localStorage.getItem('financeX_v2')) || []);
+                const budgets = ref(JSON.parse(localStorage.getItem('financeX_budgets_v2')) || {}); 
                 const categories = ref(DEFAULT_CATS);
                 const activeMonth = ref(new Date().toISOString().slice(0, 7));
                 
-                // UI
                 const sessionMode = ref(false);
                 const showSettings = ref(false);
                 const currentStep = ref(1);
                 const mainInput = ref(null);
                 const importMsg = ref('');
-                
                 const wizard = ref({ type: 'expense', amount: '', category: '', name: '', date: '' });
 
-                // UTILS
                 const saveData = () => {
-                    localStorage.setItem('financeX_oled', JSON.stringify(transactions.value));
-                    localStorage.setItem('financeX_budgets', JSON.stringify(budgets.value));
+                    localStorage.setItem('financeX_v2', JSON.stringify(transactions.value));
+                    localStorage.setItem('financeX_budgets_v2', JSON.stringify(budgets.value));
                 };
                 
-                const getCatIcon = (name) => categories.value.find(c => c.name === name)?.icon || '📦';
-                const getCatColor = (name) => categories.value.find(c => c.name === name)?.color || '#3b82f6';
+                const getCatIcon = (n) => categories.value.find(c => c.name === n)?.icon || '📦';
+                const getCatColor = (n) => categories.value.find(c => c.name === n)?.color || '#3b82f6';
                 const formatDate = (d) => d.split('-').reverse().join('.');
 
-                // ANALYTICS & COMPUTED
                 const availableMonths = computed(() => {
                     if (transactions.value.length === 0) return [{val: activeMonth.value, label: activeMonth.value}];
                     const mSet = new Set(transactions.value.map(t => t.date.slice(0,7)));
@@ -291,157 +280,126 @@
                     });
                 });
 
-                const filteredTxs = computed(() => {
-                    return transactions.value.filter(t => t.date.startsWith(activeMonth.value)).sort((a,b) => b.date.localeCompare(a.date));
-                });
-
+                const filteredTxs = computed(() => transactions.value.filter(t => t.date.startsWith(activeMonth.value)).sort((a,b) => b.date.localeCompare(a.date)));
                 const monthIncome = computed(() => filteredTxs.value.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0));
                 const monthExpense = computed(() => filteredTxs.value.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0));
                 const monthBalance = computed(() => monthIncome.value - monthExpense.value);
 
-                // SVG SPARKLINE (BabyFlow X Background chart)
                 const sparklinePoints = computed(() => {
                     const txs = filteredTxs.value.slice().sort((a,b) => a.date.localeCompare(b.date)); 
                     if (txs.length === 0) return "0,30 100,30";
-                    
                     let bal = 0;
                     const pointsArr = txs.map(t => { bal += t.amount; return bal; });
-                    const min = Math.min(...pointsArr, 0);
-                    const max = Math.max(...pointsArr, 1);
-                    const range = max - min || 1;
-
-                    return pointsArr.map((p, i) => {
-                        const x = (i / (pointsArr.length - 1 || 1)) * 100;
-                        const y = 30 - ((p - min) / range * 25);
-                        return `${x},${y}`;
-                    }).join(' ');
+                    const min = Math.min(...pointsArr, 0), max = Math.max(...pointsArr, 1), range = max - min || 1;
+                    return pointsArr.map((p, i) => `${(i / (pointsArr.length - 1 || 1)) * 100},${30 - ((p - min) / range * 25)}`).join(' ');
                 });
 
-                // BUDGET PROGRESS
-                const activeBudgets = computed(() => {
-                    return Object.keys(budgets.value).map(cat => {
-                        const limit = budgets.value[cat];
-                        const spent = filteredTxs.value.filter(t => t.amount < 0 && t.cat === cat).reduce((s,t) => s + Math.abs(t.amount), 0);
-                        return { cat, icon: getCatIcon(cat), limit, spent, pct: (spent / limit) * 100 };
-                    }).sort((a,b) => b.pct - a.pct);
-                });
+                const activeBudgets = computed(() => Object.keys(budgets.value).map(cat => {
+                    const limit = budgets.value[cat], spent = filteredTxs.value.filter(t => t.amount < 0 && t.cat === cat).reduce((s,t) => s + Math.abs(t.amount), 0);
+                    return { cat, icon: getCatIcon(cat), limit, spent, pct: (spent / limit) * 100 };
+                }).sort((a,b) => b.pct - a.pct));
 
-                // SMART FORECAST
                 const forecast = computed(() => {
                     const [y, m] = activeMonth.value.split('-').map(Number);
-                    const today = new Date();
-                    const isCurrent = today.getFullYear() === y && today.getMonth() + 1 === m;
-                    const daysInMonth = new Date(y, m, 0).getDate();
-                    const dayNow = isCurrent ? today.getDate() : daysInMonth;
-                    
+                    const today = new Date(), isCurrent = today.getFullYear() === y && today.getMonth() + 1 === m;
+                    const daysInMonth = new Date(y, m, 0).getDate(), dayNow = isCurrent ? today.getDate() : daysInMonth;
                     const daily = dayNow > 0 ? monthExpense.value / dayNow : 0;
-                    const projExp = daily * daysInMonth;
-                    
-                    return { daily, save: monthIncome.value - projExp };
+                    return { daily, save: monthIncome.value - (daily * daysInMonth) };
                 });
 
-                // FLUID WIZARD LOGIC
                 const startSession = () => {
                     wizard.value = { type: 'expense', amount: '', category: '', name: '', date: new Date().toISOString().split('T')[0] };
-                    currentStep.value = 1;
-                    sessionMode.value = true;
+                    currentStep.value = 1; sessionMode.value = true;
                     nextTick(() => mainInput.value && mainInput.value.focus());
                 };
-
-                const selectCategory = (cat) => {
-                    wizard.value.category = cat;
-                    if(!wizard.value.name) wizard.value.name = cat;
-                    currentStep.value = 3;
-                };
-
+                const selectCategory = (cat) => { wizard.value.category = cat; wizard.value.name = wizard.value.name || cat; currentStep.value = 3; };
                 const nextStep = () => {
                     if (currentStep.value === 1 && wizard.value.amount > 0) currentStep.value = 2;
                     else if (currentStep.value === 3) {
-                        const val = wizard.value.type === 'expense' ? -Math.abs(wizard.value.amount) : Math.abs(wizard.value.amount);
                         transactions.value.unshift({
-                            id: Date.now(),
-                            name: wizard.value.name || wizard.value.category,
-                            amount: val,
-                            cat: wizard.value.category,
-                            date: wizard.value.date
+                            id: Date.now(), name: wizard.value.name || wizard.value.category,
+                            amount: wizard.value.type === 'expense' ? -Math.abs(wizard.value.amount) : Math.abs(wizard.value.amount),
+                            cat: wizard.value.category, date: wizard.value.date
                         });
-                        saveData();
-                        sessionMode.value = false;
-                        window.scrollTo({top: 0, behavior: 'smooth'});
+                        saveData(); sessionMode.value = false; window.scrollTo({top: 0});
                     }
                 };
 
-                const cancelSession = () => sessionMode.value = false;
-                const deleteTx = (id) => { if(confirm('Безвозвратно удалить операцию?')) { transactions.value = transactions.value.filter(t => t.id !== id); saveData(); } };
-
-                // SWEDBANK CSV PARSER (Adapted from Finance.io)
-                const triggerCSV = () => document.getElementById('csvFile').click();
+                const deleteTx = (id) => { if(confirm('Удалить?')) { transactions.value = transactions.value.filter(t => t.id !== id); saveData(); } };
                 
-                const guessCategory = (name) => {
-                    const n = name.toUpperCase();
+                // DEMO MODE FUNCTION
+                const loadDemoData = () => {
+                    if(!confirm('Загрузить красивое демо? Ваши данные будут стерты.')) return;
+                    const demo = [];
+                    const now = new Date();
+                    const y = now.getFullYear();
+                    const m = String(now.getMonth() + 1).padStart(2, '0');
+                    
+                    demo.push({ id: 1, name: 'Зарплата Google', amount: 4500, cat: 'Зарплата', date: `${y}-${m}-01` });
+                    demo.push({ id: 2, name: 'Аренда квартиры', amount: -1200, cat: 'Дом', date: `${y}-${m}-02` });
+                    demo.push({ id: 3, name: 'Prisma Supermarket', amount: -145.50, cat: 'Продукты', date: `${y}-${m}-05` });
+                    demo.push({ id: 4, name: 'Spotify & Netflix', amount: -21.98, cat: 'Подписки', date: `${y}-${m}-06` });
+                    demo.push({ id: 5, name: 'Wolt Delivery', amount: -34.00, cat: 'Рестораны', date: `${y}-${m}-08` });
+                    demo.push({ id: 6, name: 'Circle K', amount: -55.00, cat: 'Транспорт', date: `${y}-${m}-10` });
+                    demo.push({ id: 7, name: 'Zara', amount: -89.90, cat: 'Одежда', date: `${y}-${m}-12` });
+                    demo.push({ id: 8, name: 'Apotheka', amount: -18.40, cat: 'Аптека', date: `${y}-${m}-14` });
+                    demo.push({ id: 9, name: 'MyFitness', amount: -65.00, cat: 'Здоровье', date: `${y}-${m}-15` });
+                    demo.push({ id: 10, name: 'Rimi', amount: -67.20, cat: 'Продукты', date: `${y}-${m}-16` });
+                    
+                    transactions.value = demo.sort((a,b) => b.date.localeCompare(a.date));
+                    budgets.value = { 'Продукты': 400, 'Рестораны': 150, 'Дом': 1500, 'Одежда': 100 };
+                    activeMonth.value = `${y}-${m}`;
+                    saveData();
+                    showSettings.value = false;
+                };
+
+                const triggerCSV = () => document.getElementById('csvFile').click();
+                const guessCategory = (n) => {
+                    n = n.toUpperCase();
                     if(/PRISMA|LIDL|KONSUM|SELVER|MAXIMA|RIMI/.test(n)) return 'Продукты';
                     if(/GO OIL|TANKLA|BOLT|CIRCLE|ALEXELA/.test(n)) return 'Транспорт';
                     if(/APTEEK|APTEK/.test(n)) return 'Аптека';
-                    if(/PIZZA|DODO|WOLT|MCDONALDS|HESBURGER/.test(n)) return 'Рестораны';
+                    if(/PIZZA|DODO|WOLT|MCDONALDS/.test(n)) return 'Рестораны';
                     if(/SINSAY|ZARA|H&M/.test(n)) return 'Одежда';
                     if(/SALARY|PALK/.test(n)) return 'Зарплата';
                     return 'Прочее';
                 };
-
                 const importCSV = (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
+                    const file = e.target.files[0]; if (!file) return;
                     const r = new FileReader();
                     r.onload = (ev) => {
                         try {
                             const lines = ev.target.result.split(/\r?\n/).filter(l => l.trim());
                             const delim = lines[0].includes(';') ? ';' : ',';
                             let added = 0;
-                            
                             for(let i=1; i<lines.length; i++) {
                                 const cols = lines[i].split(delim).map(c => c.replace(/^"|"$/g, '').trim());
                                 if(cols.length < 5) continue;
-                                
-                                const dateMatch = cols.find(c => c.match(/^\d{2}\.\d{2}\.\d{4}$/));
-                                if(!dateMatch) continue;
+                                const dateMatch = cols.find(c => c.match(/^\d{2}\.\d{2}\.\d{4}$/)); if(!dateMatch) continue;
                                 const date = dateMatch.split('.').reverse().join('-');
-                                
-                                const amtStr = cols.find(c => c.match(/^-?\d+[,.]\d{2}$/));
-                                if(!amtStr) continue;
+                                const amtStr = cols.find(c => c.match(/^-?\d+[,.]\d{2}$/)); if(!amtStr) continue;
                                 const amt = parseFloat(amtStr.replace(',', '.'));
-                                
                                 const name = cols[3] || cols[2] || 'Swedbank TX';
-                                
-                                const exists = transactions.value.some(t => t.date === date && t.amount === amt && t.name === name);
-                                if(!exists) {
+                                if(!transactions.value.some(t => t.date === date && t.amount === amt && t.name === name)) {
                                     transactions.value.unshift({ id: Date.now() + i, name, amount: amt, date, cat: guessCategory(name) });
                                     added++;
                                 }
                             }
-                            saveData();
-                            importMsg.value = `УСПЕХ: +${added} новых операций.`;
+                            saveData(); importMsg.value = `УСПЕХ: +${added} операций.`;
                             setTimeout(() => { showSettings.value = false; importMsg.value = ''; }, 2000);
-                        } catch(err) {
-                            importMsg.value = `ОШИБКА: Неверный формат файла.`;
-                        }
+                        } catch(err) { importMsg.value = `ОШИБКА формата файла.`; }
                     };
                     r.readAsText(file, 'UTF-8');
                 };
 
-                const hardReset = () => {
-                    if(confirm("ВЫ УВЕРЕНЫ? Это удалит всю историю финансов.")) {
-                        transactions.value = [];
-                        saveData();
-                        showSettings.value = false;
-                    }
-                };
+                const hardReset = () => { if(confirm("Удалить ВСЁ?")) { transactions.value = []; budgets.value = {}; saveData(); showSettings.value = false; } };
 
                 return { 
                     transactions, categories, activeMonth, availableMonths, filteredTxs,
                     monthIncome, monthExpense, monthBalance, sparklinePoints, activeBudgets, forecast,
                     sessionMode, showSettings, currentStep, wizard, mainInput,
                     startSession, selectCategory, nextStep, cancelSession, deleteTx,
-                    getCatIcon, getCatColor, formatDate, triggerCSV, importCSV, importMsg, hardReset
+                    getCatIcon, getCatColor, formatDate, triggerCSV, importCSV, importMsg, hardReset, loadDemoData
                 };
             }
         }).mount('#app');
