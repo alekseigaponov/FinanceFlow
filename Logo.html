@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Генератор логотипа FlowFinance</title>
+    <style>
+        body { background: #020617; color: white; font-family: sans-serif; text-align: center; padding: 50px; }
+        canvas { border-radius: 20%; box-shadow: 0 20px 50px rgba(59, 130, 246, 0.3); margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h2>Ваш логотип (512x512) готов!</h2>
+    <p>Если скачивание не началось автоматически, нажмите правой кнопкой на картинку ниже и выберите "Сохранить картинку как..."</p>
+    
+    <canvas id="canvas" width="512" height="512"></canvas>
+
+    <script>
+        // Исходный код вашего SVG логотипа с правильным фоном
+        const svgData = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="100" height="100" fill="#020617"/>
+                <defs>
+                    <linearGradient id="flowGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#3b82f6" />
+                        <stop offset="100%" stop-color="#10b981" />
+                    </linearGradient>
+                </defs>
+                <path d="M 15 80 Q 40 80, 55 55 T 80 25" stroke="url(#flowGradient)" stroke-width="10" />
+                <path d="M 55 25 L 80 25 L 80 50" stroke="#10b981" stroke-width="10" />
+            </svg>
+        `;
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+        const url = URL.createObjectURL(svgBlob);
+
+        img.onload = function () {
+            // Отрисовываем SVG на холсте (Canvas)
+            ctx.drawImage(img, 0, 0);
+            URL.revokeObjectURL(url);
+            
+            // Превращаем холст в PNG
+            const pngData = canvas.toDataURL('image/png');
+            
+            // Автоматически скачиваем файл
+            const a = document.createElement('a');
+            a.href = pngData;
+            a.download = 'logo.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
+        img.src = url;
+    </script>
+</body>
+</html>
