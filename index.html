@@ -3,28 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BabyFlow X</title>
+    <title>FINANCE.X</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
     <style>
-        :root { --neon-blue: #3b82f6; --neon-green: #10b981; --neon-rose: #f43f5e; --bg-oled: #000000; --panel: #111111; }
+        :root { 
+            --neon-blue: #3b82f6; --neon-green: #10b981; --neon-rose: #f43f5e; --neon-orange: #f97316;
+            --bg-oled: #000000; --panel: #0a0a0c; 
+        }
         body { background: var(--bg-oled); color: #f8fafc; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         
-        /* Protection against white flashes */
         [v-cloak] { display: none !important; }
         
-        /* Custom UI Elements */
-        .panel { background: var(--panel); border: 1px solid rgba(255,255,255,0.05); border-radius: 2rem; }
-        .glowing-text { text-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
-        .input-huge { background: transparent; border: none; font-size: 3rem; font-weight: 900; text-align: center; color: white; width: 100%; outline: none; caret-color: var(--neon-blue); }
-        .input-huge::placeholder { color: #333; }
+        /* UI Components */
+        .panel { background: var(--panel); border: 1px solid rgba(255,255,255,0.08); border-radius: 2rem; }
+        .glowing-text { text-shadow: 0 0 24px rgba(255, 255, 255, 0.2); }
+        .glowing-green { text-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+        .glowing-rose { text-shadow: 0 0 20px rgba(244, 63, 94, 0.4); }
         
-        /* Fluid Transitions */
-        .slide-up-enter-active, .slide-up-leave-active { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(40px) scale(0.95); }
-        .timeline-dot { box-shadow: 0 0 10px var(--neon-blue); }
+        /* Inputs */
+        .input-huge { background: transparent; border: none; font-size: 3.5rem; font-weight: 900; text-align: center; color: white; width: 100%; outline: none; }
+        .input-huge::placeholder { color: rgba(255,255,255,0.1); }
+        
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 0px; height: 0px; }
+        
+        /* Transitions */
+        .slide-up-enter-active, .slide-up-leave-active { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(30px) scale(0.98); }
+        
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        
+        .timeline-dot { box-shadow: 0 0 10px currentColor; }
     </style>
 </head>
 <body class="antialiased pb-32">
@@ -32,62 +45,99 @@
         
         <header class="flex justify-between items-center py-4 mb-2">
             <div>
-                <h1 class="text-2xl font-900 tracking-tighter">BABYFLOW<span class="text-blue-500">.X</span></h1>
-                <div class="flex items-center gap-2 mt-1">
-                    <div class="w-2 h-2 rounded-full animate-pulse" :class="energyLevel > 30 ? 'bg-green-500' : 'bg-rose-500'"></div>
-                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-widest">{{ energyStatus }}</span>
+                <h1 class="text-2xl font-900 tracking-tighter" style="font-family:'Syne', sans-serif;">FINANCE<span class="text-orange-500">.X</span></h1>
+                <div class="flex gap-2 overflow-x-auto mt-2">
+                    <button v-for="m in availableMonths" :key="m.val" @click="activeMonth = m.val" 
+                            class="text-[10px] font-bold px-3 py-1 rounded-full border transition-all whitespace-nowrap"
+                            :class="activeMonth === m.val ? 'border-orange-500 text-orange-400 bg-orange-500/10' : 'border-white/10 text-gray-500'">
+                        {{ m.label }}
+                    </button>
                 </div>
             </div>
-            <button @click="resetApp" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 active:scale-90 transition-transform">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <button @click="showSettings = !showSettings" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 active:scale-90 transition-transform">
+                ⚙️
             </button>
         </header>
 
         <transition name="slide-up">
-            <div v-if="!sessionMode" class="space-y-4">
+            <div v-if="!sessionMode && !showSettings" class="space-y-4">
                 
                 <div class="panel p-6 relative overflow-hidden">
-                    <div class="absolute bottom-0 left-0 right-0 h-1/2 opacity-20 pointer-events-none">
-                        <svg viewBox="0 0 100 30" preserveAspectRatio="none" class="w-full h-full text-blue-500">
+                    <div class="absolute bottom-0 left-0 right-0 h-2/3 opacity-30 pointer-events-none">
+                        <svg viewBox="0 0 100 30" preserveAspectRatio="none" class="w-full h-full text-orange-500">
                             <polyline fill="none" stroke="currentColor" stroke-width="2" :points="sparklinePoints" stroke-linejoin="round" stroke-linecap="round"/>
                         </svg>
                     </div>
 
                     <div class="relative z-10 flex justify-between items-start">
                         <div>
-                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Вес сейчас</p>
-                            <div class="text-5xl font-900 tracking-tighter glowing-text">{{ currentWeight }}<span class="text-xl text-blue-500 ml-1">кг</span></div>
-                            <div class="mt-2 text-xs font-bold text-green-400 flex items-center gap-1">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-                                {{ prediction.dailyGain }} г / день
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Остаток месяца</p>
+                            <div class="text-4xl font-900 tracking-tighter glowing-text" :class="monthBalance >= 0 ? 'text-white' : 'text-rose-500'">
+                                {{ monthBalance >= 0 ? '+' : '' }}{{ monthBalance.toFixed(2) }}<span class="text-xl ml-1 text-gray-500">€</span>
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Сытость</p>
-                            <div class="text-3xl font-900" :class="energyLevel > 30 ? 'text-white' : 'text-rose-500'">{{ energyLevel }}%</div>
-                            <p class="text-[10px] text-gray-500 mt-1 font-semibold">Баланс Л/П: <span class="text-white">{{ balance.l }}/{{ balance.r }}</span></p>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Прогноз</p>
+                            <div class="text-lg font-900" :class="forecast.save >= 0 ? 'text-green-400' : 'text-rose-400'">
+                                {{ forecast.save >= 0 ? '+' : '' }}{{ forecast.save.toFixed(0) }} €
+                            </div>
+                            <p class="text-[9px] text-gray-500 mt-1 font-semibold">Трата: {{ forecast.daily.toFixed(0) }} €/д</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="panel p-6 mt-4 flex-1">
-                    <h2 class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-6">Хронология</h2>
-                    <div class="relative border-l-2 border-white/10 ml-3 space-y-8">
-                        <div v-for="(entry, index) in timelineLogs" :key="index" class="relative pl-6">
-                            <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-black border-4" :class="entry.formula > 0 ? 'border-purple-500' : 'border-blue-500 timeline-dot'"></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="panel p-5">
+                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Доходы</p>
+                        <p class="text-xl font-900 text-green-400 glowing-green">+{{ monthIncome.toFixed(0) }} €</p>
+                        <div class="h-px bg-white/10 my-3"></div>
+                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Расходы</p>
+                        <p class="text-xl font-900 text-rose-500 glowing-rose">-{{ monthExpense.toFixed(0) }} €</p>
+                    </div>
+
+                    <div class="panel p-5 flex flex-col justify-center gap-3">
+                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Бюджеты</p>
+                        <div v-for="b in activeBudgets" :key="b.cat" class="w-full">
+                            <div class="flex justify-between text-[10px] font-bold mb-1">
+                                <span class="truncate pr-2">{{ b.icon }} {{ b.cat }}</span>
+                                <span :class="b.pct > 90 ? 'text-rose-500' : 'text-gray-400'">{{ Math.round(b.spent) }}/{{ b.limit }}</span>
+                            </div>
+                            <div class="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full transition-all" 
+                                     :style="{ width: Math.min(b.pct, 100) + '%', backgroundColor: b.pct > 90 ? '#f43f5e' : (b.pct > 70 ? '#f5c542' : '#3b82f6') }"></div>
+                            </div>
+                        </div>
+                        <div v-if="activeBudgets.length === 0" class="text-xs text-gray-600 font-semibold">Лимиты не заданы</div>
+                    </div>
+                </div>
+
+                <div class="panel p-6 mt-4">
+                    <h2 class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-6">История операций</h2>
+                    
+                    <div v-if="filteredTxs.length === 0" class="text-center py-6 opacity-50">
+                        <span class="text-4xl">👻</span>
+                        <p class="text-xs font-bold mt-2">Пусто</p>
+                    </div>
+
+                    <div class="relative border-l-2 border-white/5 ml-3 space-y-6">
+                        <div v-for="t in filteredTxs.slice(0, 15)" :key="t.id" class="relative pl-6 flex justify-between items-center group" @click="deleteTx(t.id)">
+                            <div class="absolute -left-[9px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-black border-4 timeline-dot" 
+                                 :style="{ color: t.amount > 0 ? '#10b981' : getCatColor(t.cat) }"></div>
                             
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h3 class="font-900 text-lg leading-none">{{ calculateTotal(entry) }} мл</h3>
-                                    <p class="text-xs text-gray-400 font-semibold mt-1">
-                                        Л: {{ entry.breast_l }} / П: {{ entry.breast_r }} / См: {{ entry.formula || 0 }}
-                                    </p>
+                            <div class="flex items-center gap-3 overflow-hidden">
+                                <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl bg-white/5 shrink-0">
+                                    {{ getCatIcon(t.cat) }}
                                 </div>
-                                <div class="text-right">
-                                    <span class="text-sm font-800 text-white">{{ entry.time }}</span>
-                                    <p class="text-[10px] text-gray-500 font-bold mt-1">{{ formatDate(entry.date) }}</p>
-                                    <p class="text-[10px] text-blue-400 font-bold mt-1">{{ entry.weight_after_r || entry.weight_before }} кг</p>
+                                <div class="truncate">
+                                    <h3 class="font-800 text-sm truncate">{{ t.name }}</h3>
+                                    <p class="text-[10px] text-gray-500 font-semibold mt-0.5">{{ formatDate(t.date) }} • {{ t.cat }}</p>
                                 </div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <span class="font-900" :class="t.amount > 0 ? 'text-green-400' : 'text-white'">
+                                    {{ t.amount > 0 ? '+' : '' }}{{ t.amount.toFixed(2) }} €
+                                </span>
+                                <p class="text-[9px] text-rose-500 font-bold opacity-0 group-hover:opacity-100 transition-opacity mt-1 uppercase cursor-pointer">Удалить</p>
                             </div>
                         </div>
                     </div>
@@ -96,40 +146,81 @@
         </transition>
 
         <transition name="slide-up">
-            <div v-if="sessionMode" class="panel p-6 flex flex-col border border-blue-500/30 ring-1 ring-blue-500/10 shadow-[0_0_50px_rgba(59,130,246,0.1)]">
+            <div v-if="sessionMode" class="panel p-6 flex flex-col border border-orange-500/30 ring-1 ring-orange-500/10 shadow-[0_0_50px_rgba(249,115,22,0.05)] min-h-[70vh]">
                 <div class="flex justify-between items-center mb-8">
                     <div class="flex gap-1">
-                        <div v-for="step in 4" :key="step" class="h-1.5 w-6 rounded-full transition-colors duration-300" :class="step <= currentStep ? 'bg-blue-500' : 'bg-white/10'"></div>
+                        <div v-for="step in 3" :key="step" class="h-1 w-8 rounded-full transition-colors duration-300" :class="step <= currentStep ? 'bg-orange-500' : 'bg-white/10'"></div>
                     </div>
-                    <button @click="cancelSession" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Отмена</button>
+                    <button @click="cancelSession" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest p-2">Отмена</button>
                 </div>
 
-                <div class="flex-1 flex flex-col justify-center min-h-[300px]">
-                    <h2 class="text-center text-sm font-bold text-blue-400 uppercase tracking-widest mb-6">{{ stepTitle }}</h2>
+                <div class="flex-1 flex flex-col justify-center items-center">
                     
-                    <input type="number" step="0.001" v-model.number="tempValue" ref="mainInput" class="input-huge" :placeholder="currentStep === 4 ? '0' : currentWeight.toFixed(3)" @focus="$event.target.select()">
-                    
-                    <p v-if="currentStep < 4" class="text-center text-gray-500 font-semibold text-xs mt-4">Килограммы (кг)</p>
-                    <p v-else class="text-center text-gray-500 font-semibold text-xs mt-4">Миллилитры (мл)</p>
-
-                    <div v-if="currentStep === 2 && tempValue > sessionData.weight_before" class="text-center text-green-400 font-bold mt-4 animate-pulse">
-                        + {{ Math.round((tempValue - sessionData.weight_before) * 1000) }} мл (Левая)
+                    <div v-if="currentStep === 1" class="w-full text-center">
+                        <div class="flex justify-center gap-4 mb-8">
+                            <button @click="wizard.type = 'expense'" class="px-6 py-2 rounded-full font-800 text-sm transition-colors border" :class="wizard.type === 'expense' ? 'bg-rose-500/20 text-rose-400 border-rose-500/50' : 'bg-transparent text-gray-500 border-white/10'">РАСХОД</button>
+                            <button @click="wizard.type = 'income'" class="px-6 py-2 rounded-full font-800 text-sm transition-colors border" :class="wizard.type === 'income' ? 'bg-green-500/20 text-green-400 border-green-500/50' : 'bg-transparent text-gray-500 border-white/10'">ДОХОД</button>
+                        </div>
+                        <input type="number" step="0.01" v-model.number="wizard.amount" ref="amtInput" class="input-huge" placeholder="0" autofocus>
+                        <p class="text-xs text-gray-500 font-bold uppercase mt-2">Евро (€)</p>
                     </div>
-                    <div v-if="currentStep === 3 && tempValue > sessionData.weight_after_l" class="text-center text-green-400 font-bold mt-4 animate-pulse">
-                        + {{ Math.round((tempValue - sessionData.weight_after_l) * 1000) }} мл (Правая)
+
+                    <div v-if="currentStep === 2" class="w-full">
+                        <h2 class="text-center text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">Выберите категорию</h2>
+                        <div class="grid grid-cols-4 gap-3">
+                            <button v-for="c in categories" :key="c.name" @click="selectCategory(c.name)" 
+                                    class="flex flex-col items-center justify-center p-3 rounded-2xl border border-white/5 bg-white/5 active:scale-95 transition-transform">
+                                <span class="text-2xl mb-1">{{ c.icon }}</span>
+                                <span class="text-[9px] font-semibold text-gray-400 truncate w-full text-center">{{ c.name }}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-if="currentStep === 3" class="w-full space-y-6">
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-4">Название (Опционально)</label>
+                            <input type="text" v-model="wizard.name" class="w-full mt-2 bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold outline-none focus:border-orange-500 transition-colors" :placeholder="wizard.category">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-4">Дата</label>
+                            <input type="date" v-model="wizard.date" class="w-full mt-2 bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold outline-none [color-scheme:dark]">
+                        </div>
                     </div>
                 </div>
 
-                <button @click="nextStep" class="w-full py-5 rounded-2xl bg-blue-600 text-white font-900 text-lg mt-8 active:scale-95 transition-transform">
-                    {{ currentStep === 4 ? 'СОХРАНИТЬ ИТОГ' : 'ДАЛЕЕ' }}
+                <button v-if="currentStep !== 2" @click="nextStep" class="w-full py-5 rounded-2xl bg-orange-600 text-white font-900 text-lg mt-8 active:scale-95 transition-transform" :disabled="currentStep === 1 && (!wizard.amount || wizard.amount <= 0)">
+                    {{ currentStep === 3 ? 'СОХРАНИТЬ' : 'ДАЛЕЕ' }}
                 </button>
             </div>
         </transition>
 
-        <div v-if="!sessionMode" class="fixed bottom-6 left-0 right-0 flex justify-center z-50 px-4 pointer-events-none">
-            <button @click="startSession" class="pointer-events-auto w-full max-w-[200px] py-4 bg-white text-black rounded-full font-900 text-sm tracking-widest uppercase flex items-center justify-center gap-2 shadow-[0_10px_40px_rgba(255,255,255,0.2)] active:scale-95 transition-transform">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
-                Взвесить
+        <transition name="slide-up">
+            <div v-if="showSettings" class="panel p-6 flex flex-col min-h-[60vh]">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="font-900 text-xl">Настройки</h2>
+                    <button @click="showSettings = false" class="text-2xl opacity-50">✕</button>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="p-4 bg-white/5 rounded-2xl border border-white/10">
+                        <h3 class="font-bold text-sm mb-2 text-orange-400">Импорт Swedbank (CSV)</h3>
+                        <p class="text-xs text-gray-400 mb-4">Скачайте выписку в формате CSV с сайта банка и загрузите сюда.</p>
+                        <input type="file" id="csvFile" accept=".csv" @change="importCSV" class="hidden">
+                        <button @click="triggerCSV" class="w-full py-3 bg-white/10 rounded-xl font-bold text-sm active:scale-95 transition-transform">Выбрать файл CSV</button>
+                        <p v-if="importMsg" class="text-[10px] text-green-400 mt-2 text-center font-bold">{{ importMsg }}</p>
+                    </div>
+
+                    <div class="p-4 bg-white/5 rounded-2xl border border-white/10">
+                        <h3 class="font-bold text-sm mb-2 text-rose-400">Опасная зона</h3>
+                        <button @click="hardReset" class="w-full py-3 border border-rose-500/30 text-rose-500 rounded-xl font-bold text-sm active:scale-95 transition-transform">Удалить все данные</button>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <div v-if="!sessionMode && !showSettings" class="fixed bottom-8 left-0 right-0 flex justify-center z-50 px-4 pointer-events-none">
+            <button @click="startSession" class="pointer-events-auto w-full max-w-[220px] py-4 bg-white text-black rounded-full font-900 text-sm tracking-widest uppercase flex items-center justify-center gap-2 shadow-[0_10px_40px_rgba(255,255,255,0.15)] active:scale-95 transition-transform border-[4px] border-black">
+                <span class="text-xl">⚡</span> ВНЕСТИ
             </button>
         </div>
 
@@ -140,294 +231,207 @@
 
         createApp({
             setup() {
-                // ПОЛНЫЙ МАССИВ ВАШИХ ДАННЫХ (БЕЗОПАСНАЯ ИНИЦИАЛИЗАЦИАЯ)
-                const getInitialData = () => {
-                    const raw = [
-                        {"date": "2026-02-17", "time": "12:00", "weight_before": 2.71, "comment": "Birth weight"},
-                        {"date": "2026-02-20", "time": "22:35", "breast_l": 0, "breast_r": 10, "formula": 30, "weight_before": 2.73, "weight_after_l": 2.73, "weight_after_r": 2.765},
-                        {"date": "2026-02-21", "time": "02:15", "breast_l": 0, "breast_r": 5, "formula": 35, "weight_before": 2.755, "weight_after_l": 2.755, "weight_after_r": 2.76},
-                        {"date": "2026-02-21", "time": "07:13", "breast_l": 0, "breast_r": 85, "formula": 60, "weight_before": 2.745, "weight_after_l": 2.745, "weight_after_r": 2.83},
-                        {"date": "2026-02-21", "time": "11:00", "breast_l": 15, "breast_r": 0, "formula": 60, "weight_before": 2.79, "weight_after_l": 2.805, "weight_after_r": 2.805},
-                        {"date": "2026-02-21", "time": "14:16", "breast_l": 0, "breast_r": 5, "formula": 65, "weight_before": 2.795, "weight_after_l": 2.795, "weight_after_r": 2.81},
-                        {"date": "2026-02-21", "time": "16:55", "breast_l": 10, "breast_r": 25, "formula": 35, "weight_before": 2.855, "weight_after_l": 2.865, "weight_after_r": 2.88},
-                        {"date": "2026-02-21", "time": "19:50", "breast_l": 10, "breast_r": 10, "formula": 30, "weight_before": 2.82, "weight_after_l": 2.83, "weight_after_r": 2.84},
-                        {"date": "2026-02-21", "time": "22:44", "breast_l": 15, "breast_r": 0, "formula": 50, "weight_before": 2.835, "weight_after_l": 2.85, "weight_after_r": 2.85},
-                        {"date": "2026-02-22", "time": "02:16", "breast_l": 0, "breast_r": 0, "formula": 60, "weight_before": 2.875, "weight_after_l": 2.875, "weight_after_r": 2.875},
-                        {"date": "2026-02-22", "time": "05:27", "breast_l": 45, "breast_r": 85, "formula": 25, "weight_before": 2.76, "weight_after_l": 2.805, "weight_after_r": 2.89},
-                        {"date": "2026-02-22", "time": "09:00", "breast_l": 15, "breast_r": 10, "formula": 60, "weight_before": 2.83, "weight_after_l": 2.845, "weight_after_r": 2.855},
-                        {"date": "2026-02-22", "time": "12:31", "breast_l": 10, "breast_r": 15, "formula": 40, "weight_before": 2.86, "weight_after_l": 2.875, "weight_after_r": 2.885},
-                        {"date": "2026-02-22", "time": "15:05", "breast_l": 10, "breast_r": 25, "formula": 50, "weight_before": 2.835, "weight_after_l": 2.845, "weight_after_r": 2.87},
-                        {"date": "2026-02-22", "time": "18:01", "breast_l": 15, "breast_r": 20, "formula": 50, "weight_before": 2.85, "weight_after_l": 2.865, "weight_after_r": 2.885},
-                        {"date": "2026-02-22", "time": "20:50", "breast_l": 15, "breast_r": 5, "formula": 60, "weight_before": 2.895, "weight_after_l": 2.91, "weight_after_r": 2.915},
-                        {"date": "2026-02-23", "time": "00:18", "breast_l": 0, "breast_r": 20, "formula": 35, "weight_before": 2.945, "weight_after_l": 2.945, "weight_after_r": 2.965},
-                        {"date": "2026-02-23", "time": "03:29", "breast_l": 0, "breast_r": 25, "formula": 60, "weight_before": 2.925, "weight_after_l": 2.925, "weight_after_r": 2.95},
-                        {"date": "2026-02-23", "time": "08:23", "breast_l": 5, "breast_r": 25, "formula": 85, "weight_before": 2.87, "weight_after_l": 2.875, "weight_after_r": 2.905},
-                        {"date": "2026-02-23", "time": "10:11", "breast_l": 35, "breast_r": 30, "formula": 30, "weight_before": 2.87, "weight_after_l": 2.905, "weight_after_r": 2.935},
-                        {"date": "2026-02-23", "time": "13:00", "breast_l": 50, "breast_r": 20, "formula": 30, "weight_before": 2.85, "weight_after_l": 2.9, "weight_after_r": 2.92},
-                        {"date": "2026-02-23", "time": "17:00", "breast_l": 10, "breast_r": 20, "formula": 50, "weight_before": 2.89, "weight_after_l": 2.89, "weight_after_r": 2.91},
-                        {"date": "2026-02-23", "time": "19:38", "breast_l": 15, "breast_r": 15, "formula": 60, "weight_before": 2.84, "weight_after_l": 2.87, "weight_after_r": 2.935},
-                        {"date": "2026-02-24", "time": "00:00", "breast_l": 70, "breast_r": 45, "formula": 0, "weight_before": 2.86, "weight_after_l": 2.93, "weight_after_r": 2.975},
-                        {"date": "2026-02-24", "time": "03:08", "breast_l": 30, "breast_r": 30, "formula": 30, "weight_before": 2.9, "weight_after_l": 2.93, "weight_after_r": 2.96},
-                        {"date": "2026-02-24", "time": "06:25", "breast_l": 20, "breast_r": 45, "formula": 30, "weight_before": 2.925, "weight_after_l": 2.925, "weight_after_r": 2.97},
-                        {"date": "2026-02-24", "time": "09:00", "breast_l": 40, "breast_r": 30, "formula": 50, "weight_before": 2.915, "weight_after_l": 2.955, "weight_after_r": 2.985},
-                        {"date": "2026-02-24", "time": "12:06", "breast_l": 25, "breast_r": 25, "formula": 60, "weight_before": 2.96, "weight_after_l": 2.98, "weight_after_r": 3.04},
-                        {"date": "2026-02-24", "time": "15:00", "breast_l": 30, "breast_r": 30, "formula": 35, "weight_before": 2.91, "weight_after_l": 2.94, "weight_after_r": 2.97},
-                        {"date": "2026-02-24", "time": "18:04", "breast_l": 15, "breast_r": 7, "formula": 30, "weight_before": 2.955, "weight_after_l": 2.955, "weight_after_r": 2.97},
-                        {"date": "2026-02-24", "time": "21:02", "breast_l": 15, "breast_r": 15, "formula": 60, "weight_before": 2.975, "weight_after_l": 3.0, "weight_after_r": 3.015},
-                        {"date": "2026-02-25", "time": "00:00", "breast_l": 10, "breast_r": 15, "formula": 70, "weight_before": 3.015, "weight_after_l": 3.015, "weight_after_r": 3.015},
-                        {"date": "2026-02-25", "time": "03:00", "breast_l": 0, "breast_r": 40, "formula": 60, "weight_before": 3.03, "weight_after_l": 3.03, "weight_after_r": 3.07},
-                        {"date": "2026-02-25", "time": "06:00", "breast_l": 15, "breast_r": 45, "formula": 30, "weight_before": 3.06, "weight_after_l": 3.075, "weight_after_r": 3.105},
-                        {"date": "2026-02-25", "time": "09:00", "breast_l": 20, "breast_r": 20, "formula": 30, "weight_before": 2.95, "weight_after_l": 2.97, "weight_after_r": 2.97},
-                        {"date": "2026-02-25", "time": "12:00", "breast_l": 35, "breast_r": 20, "formula": 0, "weight_before": 2.97, "weight_after_l": 2.99, "weight_after_r": 3.02},
-                        {"date": "2026-02-25", "time": "15:14", "breast_l": 30, "breast_r": 30, "formula": 40, "weight_before": 2.99, "weight_after_l": 3.03, "weight_after_r": 3.055},
-                        {"date": "2026-02-25", "time": "18:06", "breast_l": 25, "breast_r": 30, "formula": 30, "weight_before": 3.04, "weight_after_l": 3.065, "weight_after_r": 3.095},
-                        {"date": "2026-02-25", "time": "20:50", "breast_l": 40, "breast_r": 15, "formula": 30, "weight_before": 2.995, "weight_after_l": 3.035, "weight_after_r": 3.05},
-                        {"date": "2026-02-26", "time": "00:00", "breast_l": 20, "breast_r": 45, "formula": 30, "weight_before": 2.995, "weight_after_l": 3.015, "weight_after_r": 3.06},
-                        {"date": "2026-02-26", "time": "04:00", "breast_l": 10, "breast_r": 45, "formula": 30, "weight_before": 3.045, "weight_after_l": 3.055, "weight_after_r": 3.09},
-                        {"date": "2026-02-26", "time": "06:00", "breast_l": 0, "breast_r": 0, "formula": 60, "weight_before": 3.055, "weight_after_l": 3.055, "weight_after_r": 3.055},
-                        {"date": "2026-02-26", "time": "09:00", "breast_l": 40, "breast_r": 35, "formula": 30, "weight_before": 3.035, "weight_after_l": 3.075, "weight_after_r": 3.11},
-                        {"date": "2026-02-26", "time": "12:00", "breast_l": 20, "breast_r": 10, "formula": 90, "weight_before": 3.075, "weight_after_l": 3.095, "weight_after_r": 3.105},
-                        {"date": "2026-02-27", "time": "00:00", "breast_l": 35, "breast_r": 10, "formula": 60, "weight_before": 3.02, "weight_after_l": 3.055, "weight_after_r": 3.055},
-                        {"date": "2026-02-27", "time": "03:00", "breast_l": 15, "breast_r": 45, "formula": 0, "weight_before": 3.055, "weight_after_l": 3.1, "weight_after_r": 3.115},
-                        {"date": "2026-02-27", "time": "06:00", "breast_l": 20, "breast_r": 25, "formula": 20, "weight_before": 3.055, "weight_after_l": 3.075, "weight_after_r": 3.1},
-                        {"date": "2026-02-27", "time": "09:00", "breast_l": 35, "breast_r": 30, "formula": 60, "weight_before": 3.03, "weight_after_l": 3.06, "weight_after_r": 3.09},
-                        {"date": "2026-02-27", "time": "12:00", "breast_l": 30, "breast_r": 25, "formula": 60, "weight_before": 3.045, "weight_after_l": 3.075, "weight_after_r": 3.1},
-                        {"date": "2026-02-27", "time": "15:00", "breast_l": 40, "breast_r": 20, "formula": 0, "weight_before": 3.04, "weight_after_l": 3.08, "weight_after_r": 3.1},
-                        {"date": "2026-02-27", "time": "19:00", "breast_l": 25, "breast_r": 20, "formula": 50, "weight_before": 3.06, "weight_after_l": 3.085, "weight_after_r": 3.105},
-                        {"date": "2026-02-27", "time": "22:00", "breast_l": 25, "breast_r": 40, "formula": 50, "weight_before": 3.02, "weight_after_l": 3.045, "weight_after_r": 3.085},
-                        {"date": "2026-02-28", "time": "02:00", "breast_l": 50, "breast_r": 25, "formula": 50, "weight_before": 3.03, "weight_after_l": 3.08, "weight_after_r": 3.105},
-                        {"date": "2026-02-28", "time": "06:00", "breast_l": 20, "breast_r": 40, "formula": 30, "weight_before": 3.055, "weight_after_l": 3.075, "weight_after_r": 3.115},
-                        {"date": "2026-02-28", "time": "09:00", "breast_l": 40, "breast_r": 20, "formula": 60, "weight_before": 3.045, "weight_after_l": 3.085, "weight_after_r": 3.105},
-                        {"date": "2026-02-28", "time": "12:30", "breast_l": 35, "breast_r": 35, "formula": 30, "weight_before": 3.05, "weight_after_l": 3.085, "weight_after_r": 3.12},
-                        {"date": "2026-02-28", "time": "15:30", "breast_l": 40, "breast_r": 30, "formula": 30, "weight_before": 3.045, "weight_after_l": 3.085, "weight_after_r": 3.115},
-                        {"date": "2026-02-28", "time": "18:00", "breast_l": 50, "breast_r": 10, "formula": 30, "weight_before": 3.07, "weight_after_l": 3.12, "weight_after_r": 3.13},
-                        {"date": "2026-02-28", "time": "22:00", "breast_l": 45, "breast_r": 25, "formula": 30, "weight_before": 3.08, "weight_after_l": 3.125, "weight_after_r": 3.15},
-                        {"date": "2026-03-01", "time": "02:00", "breast_l": 45, "breast_r": 35, "formula": 30, "weight_before": 3.075, "weight_after_l": 3.12, "weight_after_r": 3.155},
-                        {"date": "2026-03-01", "time": "06:00", "breast_l": 30, "breast_r": 25, "formula": 50, "weight_before": 3.12, "weight_after_l": 3.15, "weight_after_r": 3.175},
-                        {"date": "2026-03-01", "time": "09:00", "breast_l": 30, "breast_r": 50, "formula": 30, "weight_before": 3.115, "weight_after_l": 3.145, "weight_after_r": 3.195},
-                        {"date": "2026-03-01", "time": "12:00", "breast_l": 20, "breast_r": 25, "formula": 40, "weight_before": 3.14, "weight_after_l": 3.16, "weight_after_r": 3.185},
-                        {"date": "2026-03-01", "time": "15:00", "breast_l": 40, "breast_r": 20, "formula": 60, "weight_before": 3.13, "weight_after_l": 3.17, "weight_after_r": 3.19},
-                        {"date": "2026-03-01", "time": "18:00", "breast_l": 30, "breast_r": 35, "formula": 60, "weight_before": 3.185, "weight_after_l": 3.215, "weight_after_r": 3.25},
-                        {"date": "2026-03-01", "time": "21:30", "breast_l": 40, "breast_r": 20, "formula": 20, "weight_before": 3.16, "weight_after_l": 3.2, "weight_after_r": 3.22},
-                        {"date": "2026-03-02", "time": "01:30", "breast_l": 15, "breast_r": 40, "formula": 60, "weight_before": 3.16, "weight_after_l": 3.175, "weight_after_r": 3.215},
-                        {"date": "2026-03-02", "time": "07:00", "breast_l": 45, "breast_r": 25, "formula": 30, "weight_before": 3.14, "weight_after_l": 3.185, "weight_after_r": 3.21},
-                        {"date": "2026-03-02", "time": "09:30", "breast_l": 35, "breast_r": 20, "formula": 30, "weight_before": 3.18, "weight_after_l": 3.215, "weight_after_r": 3.235},
-                        {"date": "2026-03-02", "time": "13:00", "breast_l": 40, "breast_r": 35, "formula": 30, "weight_before": 3.125, "weight_after_l": 3.165, "weight_after_r": 3.2},
-                        {"date": "2026-03-02", "time": "17:00", "breast_l": 45, "breast_r": 30, "formula": 30, "weight_before": 3.165, "weight_after_l": 3.21, "weight_after_r": 3.24},
-                        {"date": "2026-03-02", "time": "20:00", "breast_l": 35, "breast_r": 30, "formula": 30, "weight_before": 3.165, "weight_after_l": 3.20, "weight_after_r": 3.23},
-                        {"date": "2026-03-03", "time": "01:00", "breast_l": 50, "breast_r": 25, "formula": 30, "weight_before": 3.165, "weight_after_l": 3.215, "weight_after_r": 3.24},
-                        {"date": "2026-03-03", "time": "04:00", "breast_l": 60, "breast_r": 20, "formula": 30, "weight_before": 3.18, "weight_after_l": 3.24, "weight_after_r": 3.26},
-                        {"date": "2026-03-03", "time": "08:30", "breast_l": 30, "breast_r": 45, "formula": 30, "weight_before": 3.175, "weight_after_l": 3.205, "weight_after_r": 3.25},
-                        {"date": "2026-03-03", "time": "11:30", "breast_l": 45, "breast_r": 20, "formula": 60, "weight_before": 3.16, "weight_after_l": 3.205, "weight_after_r": 3.225},
-                        {"date": "2026-03-03", "time": "16:00", "breast_l": 45, "breast_r": 35, "formula": 30, "weight_before": 3.2, "weight_after_l": 3.245, "weight_after_r": 3.28},
-                        {"date": "2026-03-03", "time": "19:30", "breast_l": 50, "breast_r": 40, "formula": 30, "weight_before": 3.16, "weight_after_l": 3.21, "weight_after_r": 3.25},
-                        {"date": "2026-03-03", "time": "23:55", "breast_l": 75, "breast_r": 35, "formula": 0, "weight_before": 3.165, "weight_after_l": 3.24, "weight_after_r": 3.275},
-                        {"date": "2026-03-04", "time": "03:30", "breast_l": 50, "breast_r": 25, "formula": 30, "weight_before": 3.21, "weight_after_l": 3.26, "weight_after_r": 3.285},
-                        {"date": "2026-03-04", "time": "06:30", "breast_l": 35, "breast_r": 50, "formula": 30, "weight_before": 3.22, "weight_after_l": 3.255, "weight_after_r": 3.305},
-                        {"date": "2026-03-04", "time": "09:30", "breast_l": 30, "breast_r": 25, "formula": 30, "weight_before": 3.24, "weight_after_l": 3.27, "weight_after_r": 3.295},
-                        {"date": "2026-03-04", "time": "12:30", "breast_l": 40, "breast_r": 20, "formula": 50, "weight_before": 3.23, "weight_after_l": 3.27, "weight_after_r": 3.29},
-                        {"date": "2026-03-04", "time": "16:00", "breast_l": 25, "breast_r": 45, "formula": 40, "weight_before": 3.24, "weight_after_l": 3.265, "weight_after_r": 3.31},
-                        {"date": "2026-03-04", "time": "19:00", "breast_l": 40, "breast_r": 30, "formula": 30, "weight_before": 3.25, "weight_after_l": 3.29, "weight_after_r": 3.32},
-                        {"date": "2026-03-04", "time": "22:30", "breast_l": 30, "breast_r": 35, "formula": 60, "weight_before": 3.215, "weight_after_l": 3.245, "weight_after_r": 3.28},
-                        {"date": "2026-03-05", "time": "01:30", "breast_l": 50, "breast_r": 15, "formula": 60, "weight_before": 3.23, "weight_after_l": 3.28, "weight_after_r": 3.295},
-                        {"date": "2026-03-05", "time": "05:00", "breast_l": 40, "breast_r": 25, "formula": 60, "weight_before": 3.235, "weight_after_l": 3.275, "weight_after_r": 3.3},
-                        {"date": "2026-03-05", "time": "08:00", "breast_l": 35, "breast_r": 35, "formula": 30, "weight_before": 3.27, "weight_after_l": 3.305, "weight_after_r": 3.34},
-                        {"date": "2026-03-05", "time": "11:00", "breast_l": 40, "breast_r": 40, "formula": 30, "weight_before": 3.27, "weight_after_l": 3.31, "weight_after_r": 3.35},
-                        {"date": "2026-03-05", "time": "14:30", "breast_l": 45, "breast_r": 35, "formula": 30, "weight_before": 3.285, "weight_after_l": 3.33, "weight_after_r": 3.365},
-                        {"date": "2026-03-05", "time": "18:00", "breast_l": 50, "breast_r": 40, "formula": 30, "weight_before": 3.28, "weight_after_l": 3.33, "weight_after_r": 3.37},
-                        {"date": "2026-03-05", "time": "22:00", "breast_l": 30, "breast_r": 55, "formula": 30, "weight_before": 3.285, "weight_after_l": 3.315, "weight_after_r": 3.37},
-                        {"date": "2026-03-06", "time": "02:00", "breast_l": 45, "breast_r": 35, "formula": 60, "weight_before": 3.29, "weight_after_l": 3.335, "weight_after_r": 3.37},
-                        {"date": "2026-03-06", "time": "06:00", "breast_l": 50, "breast_r": 35, "formula": 30, "weight_before": 3.31, "weight_after_l": 3.36, "weight_after_r": 3.395},
-                        {"date": "2026-03-06", "time": "09:30", "breast_l": 35, "breast_r": 30, "formula": 50, "weight_before": 3.325, "weight_after_l": 3.36, "weight_after_r": 3.39},
-                        {"date": "2026-03-06", "time": "13:00", "breast_l": 40, "breast_r": 30, "formula": 50, "weight_before": 3.335, "weight_after_l": 3.375, "weight_after_r": 3.405},
-                        {"date": "2026-03-06", "time": "17:00", "breast_l": 35, "breast_r": 40, "formula": 60, "weight_before": 3.35, "weight_after_l": 3.385, "weight_after_r": 3.425},
-                        {"date": "2026-03-06", "time": "21:00", "breast_l": 40, "breast_r": 45, "formula": 30, "weight_before": 3.37, "weight_after_l": 3.41, "weight_after_r": 3.455},
-                        {"date": "2026-03-07", "time": "01:00", "breast_l": 55, "breast_r": 45, "formula": 30, "weight_before": 3.385, "weight_after_l": 3.44, "weight_after_r": 3.485},
-                        {"date": "2026-03-07", "time": "05:00", "breast_l": 65, "breast_r": 35, "formula": 30, "weight_before": 3.405, "weight_after_l": 3.47, "weight_after_r": 3.505},
-                        {"date": "2026-03-07", "time": "09:30", "breast_l": 40, "breast_r": 50, "formula": 30, "weight_before": 3.435, "weight_after_l": 3.475, "weight_after_r": 3.525},
-                        {"date": "2026-03-07", "time": "13:00", "breast_l": 35, "breast_r": 25, "formula": 60, "weight_before": 3.45, "weight_after_l": 3.485, "weight_after_r": 3.51},
-                        {"date": "2026-03-07", "time": "16:00", "breast_l": 50, "breast_r": 30, "formula": 30, "weight_before": 3.48, "weight_after_l": 3.53, "weight_after_r": 3.56},
-                        {"date": "2026-03-08", "time": "01:30", "breast_l": 45, "breast_r": 40, "formula": 30, "weight_before": 3.395, "weight_after_l": 3.44, "weight_after_r": 3.48},
-                        {"date": "2026-03-08", "time": "05:30", "breast_l": 40, "breast_r": 30, "formula": 30, "weight_before": 3.415, "weight_after_l": 3.435, "weight_after_r": 3.485},
-                        {"date": "2026-03-08", "time": "10:00", "breast_l": 65, "breast_r": 10, "formula": 60, "weight_before": 3.405, "weight_after_l": 3.47, "weight_after_r": 3.48},
-                        {"date": "2026-03-08", "time": "13:00", "breast_l": 30, "breast_r": 25, "formula": 60, "weight_before": 3.465, "weight_after_l": 3.495, "weight_after_r": 3.52},
-                        {"date": "2026-03-08", "time": "17:00", "breast_l": 75, "breast_r": 0, "formula": 30, "weight_before": 3.425, "weight_after_l": 3.5, "weight_after_r": 3.5},
-                        {"date": "2026-03-08", "time": "21:00", "breast_l": 25, "breast_r": 40, "formula": 60, "weight_before": 3.415, "weight_after_l": 3.44, "weight_after_r": 3.48},
-                        {"date": "2026-03-09", "time": "01:00", "breast_l": 45, "breast_r": 35, "formula": 30, "weight_before": 3.435, "weight_after_l": 3.48, "weight_after_r": 3.515},
-                        {"date": "2026-03-09", "time": "05:00", "breast_l": 45, "breast_r": 15, "formula": 60, "weight_before": 3.43, "weight_after_l": 3.495, "weight_after_r": 3.51},
-                        {"date": "2026-03-09", "time": "09:00", "breast_l": 45, "breast_r": 35, "formula": 30, "weight_before": 3.47, "weight_after_l": 3.515, "weight_after_r": 3.55},
-                        {"date": "2026-03-09", "time": "12:00", "breast_l": 15, "breast_r": 25, "formula": 60, "weight_before": 3.405, "weight_after_l": 3.42, "weight_after_r": 3.445},
-                        {"date": "2026-03-09", "time": "16:30", "breast_l": 45, "breast_r": 40, "formula": 30, "weight_before": 3.425, "weight_after_l": 3.47, "weight_after_r": 3.51},
-                        {"date": "2026-03-09", "time": "20:00", "breast_l": 40, "breast_r": 25, "formula": 60, "weight_before": 3.44, "weight_after_l": 3.48, "weight_after_r": 3.505},
-                        {"date": "2026-03-10", "time": "02:00", "breast_l": 70, "breast_r": 35, "formula": 30, "weight_before": 3.45, "weight_after_l": 3.52, "weight_after_r": 3.555},
-                        {"date": "2026-03-10", "time": "06:30", "breast_l": 35, "breast_r": 35, "formula": 60, "weight_before": 3.45, "weight_after_l": 3.485, "weight_after_r": 3.52},
-                        {"date": "2026-03-10", "time": "10:00", "breast_l": 40, "breast_r": 35, "formula": 60, "weight_before": 3.515, "weight_after_l": 3.555, "weight_after_r": 3.59},
-                        {"date": "2026-03-11", "time": "13:00", "breast_l": 35, "breast_r": 25, "formula": 60, "weight_before": 3.51, "weight_after_l": 3.545, "weight_after_r": 3.57},
-                        {"date": "2026-03-11", "time": "17:00", "breast_l": 50, "breast_r": 35, "formula": 30, "weight_before": 3.495, "weight_after_l": 3.545, "weight_after_r": 3.58},
-                        {"date": "2026-03-11", "time": "20:00", "breast_l": 50, "breast_r": 25, "formula": 60, "weight_before": 3.56, "weight_after_l": 3.61, "weight_after_r": 3.635},
-                        {"date": "2026-03-12", "time": "02:00", "breast_l": 70, "breast_r": 50, "formula": 30, "weight_before": 3.51, "weight_after_l": 3.58, "weight_after_r": 3.63},
-                        {"date": "2026-03-12", "time": "07:00", "breast_l": 45, "breast_r": 40, "formula": 60, "weight_before": 3.53, "weight_after_l": 3.575, "weight_after_r": 3.615},
-                        {"date": "2026-03-12", "time": "10:00", "breast_l": 40, "breast_r": 25, "formula": 60, "weight_before": 3.515, "weight_after_l": 3.555, "weight_after_r": 3.58},
-                        {"date": "2026-03-12", "time": "13:00", "breast_l": 35, "breast_r": 30, "formula": 40, "weight_before": 3.59, "weight_after_l": 3.625, "weight_after_r": 3.655},
-                        {"date": "2026-03-12", "time": "17:00", "breast_l": 40, "breast_r": 35, "formula": 60, "weight_before": 3.56, "weight_after_l": 3.6, "weight_after_r": 3.635},
-                        {"date": "2026-03-12", "time": "20:00", "breast_l": 40, "breast_r": 25, "formula": 60, "weight_before": 3.62, "weight_after_l": 3.66, "weight_after_r": 3.685},
-                        {"date": "2026-03-13", "time": "02:00", "breast_l": 25, "breast_r": 15, "formula": 60, "weight_before": 3.54, "weight_after_l": 3.565, "weight_after_r": 3.58},
-                        {"date": "2026-03-13", "time": "07:00", "breast_l": 30, "breast_r": 40, "formula": 60, "weight_before": 3.57, "weight_after_l": 3.6, "weight_after_r": 3.64},
-                        {"date": "2026-03-13", "time": "10:00", "breast_l": 50, "breast_r": 30, "formula": 30, "weight_before": 3.6, "weight_after_l": 3.65, "weight_after_r": 3.68},
-                        {"date": "2026-03-13", "time": "13:00", "breast_l": 30, "breast_r": 20, "formula": 60, "weight_before": 3.6, "weight_after_l": 3.63, "weight_after_r": 3.65},
-                        {"date": "2026-03-13", "time": "17:30", "breast_l": 30, "breast_r": 40, "formula": 30, "weight_before": 3.605, "weight_after_l": 3.635, "weight_after_r": 3.675},
-                        {"date": "2026-03-13", "time": "21:00", "breast_l": 45, "breast_r": 30, "formula": 30, "weight_before": 3.61, "weight_after_l": 3.655, "weight_after_r": 3.685},
-                        {"date": "2026-03-14", "time": "03:00", "breast_l": 60, "breast_r": 50, "formula": 30, "weight_before": 3.62, "weight_after_l": 3.68, "weight_after_r": 3.73},
-                        {"date": "2026-03-14", "time": "07:00", "breast_l": 50, "breast_r": 40, "formula": 30, "weight_before": 3.615, "weight_after_l": 3.665, "weight_after_r": 3.705},
-                        {"date": "2026-03-14", "time": "10:00", "breast_l": 0, "breast_r": 30, "formula": 60, "weight_before": 3.625, "weight_after_l": 3.625, "weight_after_r": 3.655}
-                    ];
-                    return raw;
-                };
+                // CONSTANTS
+                const DEFAULT_CATS = [
+                    {name:'Продукты', icon:'🛒', color:'#f97316'}, {name:'Транспорт', icon:'⛽', color:'#3b82f6'},
+                    {name:'Аптека', icon:'💊', color:'#f43f5e'}, {name:'Рестораны', icon:'🍕', color:'#facc15'},
+                    {name:'Одежда', icon:'👗', color:'#a855f7'}, {name:'Кредиты', icon:'🏦', color:'#ec4899'},
+                    {name:'Подписки', icon:'📱', color:'#8b5cf6'}, {name:'Зарплата', icon:'💰', color:'#10b981'},
+                    {name:'Переводы', icon:'💸', color:'#fcd34d'}, {name:'Здоровье', icon:'🏃', color:'#22c55e'},
+                    {name:'Развлечения', icon:'🎮', color:'#ef4444'}, {name:'Дом', icon:'🏠', color:'#eab308'},
+                    {name:'Прочее', icon:'📦', color:'#6b7280'}
+                ];
 
-                const logs = ref([]);
-                try {
-                    const local = localStorage.getItem('babyFlowDataX');
-                    logs.value = local ? JSON.parse(local) : getInitialData();
-                } catch(e) {
-                    logs.value = getInitialData();
-                }
-
-                // Вспомогательные функции
-                const saveLogs = () => localStorage.setItem('babyFlowDataX', JSON.stringify(logs.value));
-                const getWeight = (log) => log.weight_after_r || log.weight_after_l || log.weight_before || 0;
-                const calculateTotal = (e) => (e.breast_l || 0) + (e.breast_r || 0) + (e.formula || 0);
+                // STATE
+                const transactions = ref(JSON.parse(localStorage.getItem('financeXV1')) || []);
+                const budgets = ref(JSON.parse(localStorage.getItem('financeBudgetsV1')) || {'Продукты': 400, 'Транспорт': 100}); // Demo budgets
+                const categories = ref(DEFAULT_CATS);
+                const activeMonth = ref(new Date().toISOString().slice(0, 7));
                 
-                const parseSafeDate = (d) => {
-                    if (!d) return new Date();
-                    if (d.includes('.')) return new Date(`${d.split('.')[2]}-${d.split('.')[1]}-${d.split('.')[0]}`);
-                    return new Date(d);
-                };
-                const formatDate = (d) => d && d.includes('-') ? d.split('-').reverse().slice(0, 2).join('.') : d;
-
-                // Состояния UI
+                // UI STATE
                 const sessionMode = ref(false);
-                const currentStep = ref(1); // 1: Before, 2: Left, 3: Right, 4: Formula
-                const tempValue = ref('');
-                const mainInput = ref(null);
+                const showSettings = ref(false);
+                const currentStep = ref(1);
+                const amtInput = ref(null);
+                const importMsg = ref('');
                 
-                const sessionData = ref({ date: '', time: '', weight_before: 0, weight_after_l: 0, weight_after_r: 0, breast_l: 0, breast_r: 0, formula: 0 });
+                const wizard = ref({ type: 'expense', amount: '', category: '', name: '', date: '' });
 
-                // KPI
-                const currentWeight = computed(() => logs.value.length === 0 ? 0 : getWeight(logs.value[logs.value.length - 1]));
-                const timelineLogs = computed(() => [...logs.value].reverse().slice(0, 8));
+                // UTILS
+                const saveData = () => {
+                    localStorage.setItem('financeXV1', JSON.stringify(transactions.value));
+                    localStorage.setItem('financeBudgetsV1', JSON.stringify(budgets.value));
+                };
+                
+                const getCatIcon = (name) => categories.value.find(c => c.name === name)?.icon || '📦';
+                const getCatColor = (name) => categories.value.find(c => c.name === name)?.color || '#6b7280';
+                const formatDate = (d) => d.split('-').reverse().join('.');
 
+                // COMPUTED
+                const availableMonths = computed(() => {
+                    if (transactions.value.length === 0) return [{val: activeMonth.value, label: activeMonth.value}];
+                    const mSet = new Set(transactions.value.map(t => t.date.slice(0,7)));
+                    mSet.add(new Date().toISOString().slice(0, 7)); // Always include current
+                    return Array.from(mSet).sort().reverse().map(m => {
+                        const [y, mo] = m.split('-');
+                        const mNames = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+                        return { val: m, label: `${mNames[parseInt(mo)-1]} ${y}` };
+                    });
+                });
+
+                const filteredTxs = computed(() => {
+                    return transactions.value.filter(t => t.date.startsWith(activeMonth.value)).sort((a,b) => b.date.localeCompare(a.date));
+                });
+
+                const monthIncome = computed(() => filteredTxs.value.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0));
+                const monthExpense = computed(() => filteredTxs.value.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0));
+                const monthBalance = computed(() => monthIncome.value - monthExpense.value);
+
+                // SPARKLINE (Daily Balance Trajectory)
                 const sparklinePoints = computed(() => {
-                    if (logs.value.length < 2) return "0,30 100,30";
-                    const recent = logs.value.slice(-15);
-                    const weights = recent.map(l => getWeight(l));
-                    const min = Math.min(...weights);
-                    const max = Math.max(...weights);
-                    const range = max - min || 1;
+                    const txs = filteredTxs.value.slice().sort((a,b) => a.date.localeCompare(b.date)); // Chronological
+                    if (txs.length === 0) return "0,30 100,30";
                     
-                    return weights.map((w, i) => {
-                        const x = (i / (weights.length - 1)) * 100;
-                        const y = 30 - ((w - min) / range * 25); // Оставляем 5px снизу
+                    let bal = 0;
+                    const pointsArr = txs.map(t => { bal += t.amount; return bal; });
+                    const min = Math.min(...pointsArr, 0);
+                    const max = Math.max(...pointsArr, 1);
+                    const range = max - min || 1;
+
+                    return pointsArr.map((p, i) => {
+                        const x = (i / (pointsArr.length - 1 || 1)) * 100;
+                        const y = 30 - ((p - min) / range * 25);
                         return `${x},${y}`;
                     }).join(' ');
                 });
 
-                // AI Предсказание
-                const prediction = computed(() => {
-                    const valid = logs.value.filter(l => getWeight(l) > 0);
-                    if (valid.length < 5) return { nextGoal: "--", date: "--", dailyGain: 0 };
-                    const first = valid[Math.max(0, valid.length - 10)];
-                    const last = valid[valid.length - 1];
-                    let days = (parseSafeDate(last.date) - parseSafeDate(first.date)) / 86400000;
-                    if (days < 1) days = 1;
-
-                    const gain = Math.round(((getWeight(last) - getWeight(first)) / days) * 1000);
-                    if (gain <= 0) return { nextGoal: "--", date: "--", dailyGain: 0 };
-
-                    const nextG = Math.ceil(getWeight(last) * 10) / 10;
-                    const daysReq = Math.ceil(((nextG - getWeight(last)) * 1000) / gain);
-                    const gDate = new Date(); gDate.setDate(gDate.getDate() + daysReq);
-                    return { nextGoal: nextG.toFixed(2), dailyGain: gain, date: gDate.toLocaleDateString('ru-RU', {day:'numeric', month:'short'}) };
+                // BUDGETS LOGIC
+                const activeBudgets = computed(() => {
+                    return Object.keys(budgets.value).map(cat => {
+                        const limit = budgets.value[cat];
+                        const spent = filteredTxs.value.filter(t => t.amount < 0 && t.cat === cat).reduce((s,t) => s + Math.abs(t.amount), 0);
+                        return { cat, icon: getCatIcon(cat), limit, spent, pct: (spent / limit) * 100 };
+                    }).sort((a,b) => b.pct - a.pct);
                 });
 
-                // Энергия
-                const energyLevel = computed(() => {
-                    if (logs.value.length === 0) return 0;
-                    const last = logs.value[logs.value.length - 1];
-                    const vol = calculateTotal(last);
-                    if (vol === 0) return 0;
+                // FORECAST LOGIC (BabyFlow style)
+                const forecast = computed(() => {
+                    const [y, m] = activeMonth.value.split('-').map(Number);
+                    const today = new Date();
+                    const isCurrent = today.getFullYear() === y && today.getMonth() + 1 === m;
+                    const daysInMonth = new Date(y, m, 0).getDate();
+                    const dayNow = isCurrent ? today.getDate() : daysInMonth;
                     
-                    const fd = parseSafeDate(last.date);
-                    const feedTime = new Date(fd.getFullYear(), fd.getMonth(), fd.getDate(), ...last.time.split(':'));
-                    const elapsed = (new Date() - feedTime) / 60000;
-                    const satiety = (vol / 30) * 60;
+                    const daily = dayNow > 0 ? monthExpense.value / dayNow : 0;
+                    const projExp = daily * daysInMonth;
                     
-                    if (elapsed >= satiety) return 0;
-                    return Math.round(Math.max(0, 100 - (elapsed / satiety * 100)));
-                });
-                
-                const energyStatus = computed(() => energyLevel.value > 50 ? 'Сыт' : (energyLevel.value > 20 ? 'Норма' : 'Голоден'));
-
-                const balance = computed(() => {
-                    const last = logs.value.slice(-10);
-                    const sumL = last.reduce((s, i) => s + (i.breast_l || 0), 0);
-                    const sumR = last.reduce((s, i) => s + (i.breast_r || 0), 0);
-                    const t = sumL + sumR || 1;
-                    return { l: Math.round((sumL/t)*100), r: Math.round((sumR/t)*100) };
+                    return { daily, save: monthIncome.value - projExp };
                 });
 
-                // Управление сессией
-                const stepTitle = computed(() => {
-                    const titles = ['1. ВЕС ДО КОРМЛЕНИЯ', '2. ВЕС ПОСЛЕ ЛЕВОЙ ГРУДИ', '3. ВЕС ПОСЛЕ ПРАВОЙ ГРУДИ', '4. ДОКОРМ СМЕСЬЮ (МЛ)'];
-                    return titles[currentStep.value - 1];
-                });
-
+                // WIZARD METHODS
                 const startSession = () => {
-                    sessionMode.value = true;
+                    wizard.value = { type: 'expense', amount: '', category: '', name: '', date: new Date().toISOString().split('T')[0] };
                     currentStep.value = 1;
-                    tempValue.value = currentWeight.value;
-                    const now = new Date();
-                    sessionData.value = { 
-                        date: now.toISOString().split('T')[0], 
-                        time: now.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'}), 
-                        weight_before: 0, weight_after_l: 0, weight_after_r: 0, breast_l: 0, breast_r: 0, formula: 0 
-                    };
-                    nextTick(() => mainInput.value && mainInput.value.focus());
+                    sessionMode.value = true;
+                    nextTick(() => amtInput.value && amtInput.value.focus());
+                };
+
+                const selectCategory = (cat) => {
+                    wizard.value.category = cat;
+                    if(!wizard.value.name) wizard.value.name = cat;
+                    currentStep.value = 3;
                 };
 
                 const nextStep = () => {
-                    if (currentStep.value === 1) {
-                        sessionData.value.weight_before = tempValue.value || currentWeight.value;
-                        currentStep.value++;
-                    } else if (currentStep.value === 2) {
-                        sessionData.value.weight_after_l = tempValue.value || sessionData.value.weight_before;
-                        sessionData.value.breast_l = Math.max(0, Math.round((sessionData.value.weight_after_l - sessionData.value.weight_before) * 1000));
-                        currentStep.value++;
-                    } else if (currentStep.value === 3) {
-                        sessionData.value.weight_after_r = tempValue.value || sessionData.value.weight_after_l;
-                        sessionData.value.breast_r = Math.max(0, Math.round((sessionData.value.weight_after_r - sessionData.value.weight_after_l) * 1000));
-                        tempValue.value = ''; // Сбрасываем для ввода смеси
-                        currentStep.value++;
-                    } else if (currentStep.value === 4) {
-                        sessionData.value.formula = tempValue.value || 0;
-                        finishSession();
+                    if (currentStep.value === 1 && wizard.value.amount > 0) currentStep.value = 2;
+                    else if (currentStep.value === 3) {
+                        const val = wizard.value.type === 'expense' ? -Math.abs(wizard.value.amount) : Math.abs(wizard.value.amount);
+                        transactions.value.unshift({
+                            id: Date.now(),
+                            name: wizard.value.name || wizard.value.category,
+                            amount: val,
+                            cat: wizard.value.category,
+                            date: wizard.value.date
+                        });
+                        saveData();
+                        sessionMode.value = false;
                     }
-                    nextTick(() => mainInput.value && mainInput.value.focus());
                 };
 
-                const finishSession = () => {
-                    logs.value.push({...sessionData.value});
-                    saveLogs();
-                    sessionMode.value = false;
-                    window.scrollTo({top: 0, behavior: 'smooth'});
+                const cancelSession = () => sessionMode.value = false;
+                const deleteTx = (id) => { if(confirm('Удалить операцию?')) { transactions.value = transactions.value.filter(t => t.id !== id); saveData(); } };
+
+                // SETTINGS / CSV IMPORT
+                const triggerCSV = () => document.getElementById('csvFile').click();
+                
+                const guessCategory = (name) => {
+                    const n = name.toUpperCase();
+                    if(/PRISMA|LIDL|KONSUM|SELVER|MAXIMA|RIMI/.test(n)) return 'Продукты';
+                    if(/GO OIL|TANKLA|BOLT|CIRCLE/.test(n)) return 'Транспорт';
+                    if(/APTEEK|APTEK/.test(n)) return 'Аптека';
+                    if(/PIZZA|DODO|WOLT|MCDONALDS/.test(n)) return 'Рестораны';
+                    if(/SINSAY|ZARA|H&M/.test(n)) return 'Одежда';
+                    if(/SALARY|PALK/.test(n)) return 'Зарплата';
+                    return 'Прочее';
                 };
 
-                const cancelSession = () => { sessionMode.value = false; };
-                const resetApp = () => { if(confirm("Сбросить данные к оригиналу?")) { logs.value = getInitialData(); saveLogs(); } };
+                const importCSV = (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const r = new FileReader();
+                    r.onload = (ev) => {
+                        try {
+                            const lines = ev.target.result.split(/\r?\n/).filter(l => l.trim());
+                            const delim = lines[0].includes(';') ? ';' : ',';
+                            let added = 0;
+                            
+                            // Naive Swedbank CSV parser (skip headers)
+                            for(let i=1; i<lines.length; i++) {
+                                const cols = lines[i].split(delim).map(c => c.replace(/^"|"$/g, '').trim());
+                                if(cols.length < 5) continue;
+                                
+                                // In Swedbank usually: col 2 is date (DD.MM.YYYY), col 3 is Beneficiary, col 5/7 is amount
+                                const dateMatch = cols.find(c => c.match(/^\d{2}\.\d{2}\.\d{4}$/));
+                                if(!dateMatch) continue;
+                                const date = dateMatch.split('.').reverse().join('-');
+                                
+                                const amtStr = cols.find(c => c.match(/^-?\d+[,.]\d{2}$/));
+                                if(!amtStr) continue;
+                                const amt = parseFloat(amtStr.replace(',', '.'));
+                                
+                                const name = cols[3] || cols[2] || 'Swedbank TX';
+                                
+                                // Prevent duplicates
+                                const exists = transactions.value.some(t => t.date === date && t.amount === amt && t.name === name);
+                                if(!exists) {
+                                    transactions.value.unshift({ id: Date.now() + i, name, amount: amt, date, cat: guessCategory(name) });
+                                    added++;
+                                }
+                            }
+                            saveData();
+                            importMsg.value = `Успешно загружено: ${added} новых операций.`;
+                            setTimeout(() => { showSettings.value = false; importMsg.value = ''; }, 2000);
+                        } catch(err) {
+                            importMsg.value = `Ошибка импорта!`;
+                        }
+                    };
+                    r.readAsText(file, 'UTF-8');
+                };
+
+                const hardReset = () => {
+                    if(confirm("ТОЧНО УДАЛИТЬ ВСЁ?")) {
+                        transactions.value = [];
+                        saveData();
+                        showSettings.value = false;
+                    }
+                };
 
                 return { 
-                    logs, sessionMode, currentStep, tempValue, mainInput, stepTitle, sessionData,
-                    currentWeight, timelineLogs, sparklinePoints, prediction, energyLevel, energyStatus, balance,
-                    startSession, nextStep, cancelSession, resetApp, calculateTotal, formatDate
+                    transactions, categories, activeMonth, availableMonths, filteredTxs,
+                    monthIncome, monthExpense, monthBalance, sparklinePoints, activeBudgets, forecast,
+                    sessionMode, showSettings, currentStep, wizard, amtInput,
+                    startSession, selectCategory, nextStep, cancelSession, deleteTx,
+                    getCatIcon, getCatColor, formatDate, triggerCSV, importCSV, importMsg, hardReset
                 };
             }
         }).mount('#app');
