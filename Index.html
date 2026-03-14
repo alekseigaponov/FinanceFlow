@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>BabyFlow AI 2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; overflow-x: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
+        .modal-enter-active, .modal-leave-active { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-enter-from, .modal-leave-to { opacity: 0; transform: translateY(100%); }
+        input { border: 1px solid #e2e8f0 !important; outline: none; transition: border 0.3s; }
+        input:focus { border-color: #3b82f6 !important; ring: 2px rgba(59, 130, 246, 0.2); }
+    </style>
+</head>
+<body class="pb-24">
+    <div id="app" class="max-w-md mx-auto p-4">
+        
+        <header class="flex justify-between items-center mb-6 pt-4 px-2">
+            <div>
+                <h1 class="text-3xl font-800 text-slate-900 tracking-tight">BabyFlow <span class="text-blue-500 italic">AI</span></h1>
+                <p class="text-slate-400 text-xs font-semibold uppercase tracking-widest">Dashboard 2026</p>
+            </div>
+            <button @click="clearData" class="text-[10px] text-slate-300 hover:text-red-400 transition-colors uppercase">Сброс</button>
+        </header>
+
+        <div class="glass p-6 rounded-[2.5rem] shadow-xl mb-6 bg-gradient-to-br from-white to-blue-50/50">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-[10px] text-slate-400 uppercase font-bold mb-1">Вес сейчас</p>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-5xl font-800 text-slate-800">{{ currentWeight }}</span>
+                        <span class="text-blue-500 font-bold text-xl">кг</span>
+                    </div>
+                </div>
+                <div class="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs font-bold">
+                    ↑ {{ totalGain }}г
+                </div>
+            </div>
+            <div class="mt-6">
+                <canvas id="weightChart" height="140"></canvas>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <div class="glass p-4 rounded-3xl shadow-sm">
+                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Последний объем</p>
+                <p class="text-xl font-800 text-slate-800">{{ lastVolume }} <span class="text-xs font-normal">мл</span></p>
+            </div>
+            <div class="glass p-4 rounded-3xl shadow-sm border-r-4 border-blue-400">
+                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Грудь (Л/П)</p>
+                <p class="text-xl font-800 text-slate-800">{{ lastBreasts }}</p>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <h3 class="text-lg font-800 text-slate-800 px-2 flex justify-between">
+                История <span>✨</span>
+            </h3>
+            <div v-for="(entry, index) in limitedLog" :key="index" 
+                 class="glass p-5 rounded-3xl flex items-center justify-between shadow-sm transition-all active:scale-[0.98]">
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">{{ entry.date }} • {{ entry.time }}</p>
+                    <p class="text-md font-bold text-slate-800">
+                        {{ calculateTotal(entry) }} мл 
+                        <span class="text-xs font-medium text-blue-500 ml-1">({{ entry.formula }} смесь)</span>
+                    </p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm font-800 text-slate-700">{{ entry.weight_after_r || entry.weight_before }} кг</p>
+                    <p class="text-[10px] text-slate-400 italic">После кормления</p>
+                </div>
+            </div>
+        </div>
+
+        <transition name="modal">
+            <div v-if="showForm" class="fixed inset-0 z-50 flex items-end">
+                <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="showForm = false"></div>
+                <div class="relative w-full glass rounded-t-[3rem] p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
+                    <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
+                    <h2 class="text-2xl font-800 text-slate-800 mb-6 text-center">Новая запись</h2>
+                    
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 ml-2">ДАТА</label>
+                                <input type="date" v-model="form.date" class="w-full p-4 rounded-2xl bg-slate-50 border-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 ml-2">ВРЕМЯ</label>
+                                <input type="time" v-model="form.time" class="w-full p-4 rounded-2xl bg-slate-50 border-none">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 ml-2 text-blue-500">ГРУДЬ ЛЕВ. (мл)</label>
+                                <input type="number" v-model.number="form.breast_l" class="w-full p-4 rounded-2xl bg-slate-50 border-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 ml-2 text-blue-500">ГРУДЬ ПРАВ. (мл)</label>
+                                <input type="number" v-model.number="form.breast_r" class="w-full p-4 rounded-2xl bg-slate-50 border-none">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 ml-2 text-indigo-500">СМЕСЬ (мл)</label>
+                            <input type="number" v-model.number="form.formula" class="w-full p-4 rounded-2xl bg-indigo-50 border-none">
+                        </div>
+
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 ml-2">ВЕС ПОСЛЕ (кг)</label>
+                            <input type="number" step="0.001" v-model.number="form.weight_after_r" class="w-full p-4 rounded-2xl bg-slate-50 border-none">
+                        </div>
+
+                        <button @click="saveEntry" class="w-full py-5 bg-slate-900 text-white rounded-3xl font-bold text-lg shadow-xl active:scale-95 transition-transform mt-4">
+                            Сохранить данные
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <nav class="fixed bottom-6 left-6 right-6 h-20 glass rounded-[2.5rem] shadow-2xl flex items-center justify-around px-8 z-40 border border-white/50">
+            <button class="text-blue-500 text-2xl">🏠</button>
+            <button @click="openForm" class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white -mt-12 shadow-blue-300 shadow-2xl active:scale-90 transition-transform">
+                <span class="text-3xl">+</span>
+            </button>
+            <button @click="exportData" class="text-slate-300 text-2xl">💾</button>
+        </nav>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted, computed, reactive } = Vue;
+
+        createApp({
+            setup() {
+                const initialData = [
+                    {"date": "2026-02-17", "time": "12:00", "weight_before": 2.71, "breast_l":0, "breast_r":0, "formula":0, "weight_after_r":2.71},
+                    // [Сюда вставьте ваш JSON из первого сообщения для старта]
+                ];
+
+                const logs = ref(JSON.parse(localStorage.getItem('babyLogs')) || initialData);
+                const showForm = ref(false);
+                const chart = ref(null);
+
+                const form = reactive({
+                    date: new Date().toISOString().split('T')[0],
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                    breast_l: 0,
+                    breast_r: 0,
+                    formula: 0,
+                    weight_after_r: 0
+                });
+
+                const currentWeight = computed(() => logs.value[logs.value.length - 1]?.weight_after_r || 0);
+                const totalGain = computed(() => Math.round((currentWeight.value - 2.71) * 1000));
+                const lastFeed = computed(() => logs.value[logs.value.length - 1] || {});
+                const lastVolume = computed(() => (lastFeed.value.breast_l || 0) + (lastFeed.value.breast_r || 0) + (lastFeed.value.formula || 0));
+                const lastBreasts = computed(() => `${lastFeed.value.breast_l || 0}/${lastFeed.value.breast_r || 0}`);
+                const limitedLog = computed(() => [...logs.value].reverse().slice(0, 10));
+
+                const calculateTotal = (e) => (e.breast_l || 0) + (e.breast_r || 0) + (e.formula || 0);
+
+                const openForm = () => {
+                    form.weight_after_r = currentWeight.value;
+                    showForm.value = true;
+                };
+
+                const saveEntry = () => {
+                    logs.value.push({...form});
+                    localStorage.setItem('babyLogs', JSON.stringify(logs.value));
+                    showForm.value = false;
+                    updateChart();
+                };
+
+                const clearData = () => {
+                    if(confirm("Удалить все данные?")) {
+                        logs.value = initialData;
+                        localStorage.setItem('babyLogs', JSON.stringify(initialData));
+                        updateChart();
+                    }
+                };
+
+                const updateChart = () => {
+                    if (chart.value) chart.value.destroy();
+                    const ctx = document.getElementById('weightChart').getContext('2d');
+                    chart.value = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: logs.value.slice(-15).map(d => d.time),
+                            datasets: [{
+                                data: logs.value.slice(-15).map(d => d.weight_after_r),
+                                borderColor: '#3b82f6',
+                                tension: 0.4,
+                                fill: true,
+                                backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                                pointRadius: 4,
+                                pointBackgroundColor: '#fff',
+                                pointBorderColor: '#3b82f6'
+                            }]
+                        },
+                        options: {
+                            plugins: { legend: { display: false } },
+                            scales: { x: { display: false }, y: { ticks: { font: { size: 9 } } } }
+                        }
+                    });
+                };
+
+                const exportData = () => {
+                    const dataStr = JSON.stringify(logs.value, null, 2);
+                    console.log(dataStr);
+                    alert("Данные выведены в консоль (через инспектор)");
+                };
+
+                onMounted(() => updateChart());
+
+                return { logs, currentWeight, totalGain, lastVolume, lastBreasts, limitedLog, calculateTotal, showForm, form, saveEntry, openForm, clearData, exportData };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
