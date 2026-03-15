@@ -8,7 +8,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="FlowFinance">
+    <meta name="application-name" content="FlowFinance">
     <meta name="theme-color" content="#020617">
+    
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./logo.png">
 
@@ -32,9 +34,8 @@
         body::before { content: ''; position: fixed; top: -20%; right: -10%; width: 70%; height: 70%; background: radial-gradient(circle, var(--accent) 0%, transparent 60%); opacity: 0.15; z-index: -1; pointer-events: none; }
         [v-cloak] { display: none !important; }
         
-        .panel { background: var(--panel); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--border-color); border-radius: 2rem; box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
+        .panel { background: var(--panel); backdrop-filter: blur(24px); border: 1px solid var(--border-color); border-radius: 2rem; box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
         .input-huge { background: transparent; border: none; font-size: 3.5rem; font-weight: 900; text-align: center; color: var(--text-main); width: 100%; outline: none; caret-color: var(--accent); }
-        .input-huge::placeholder { color: var(--text-muted); opacity: 0.5; }
         .bg-input { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); }
         
         ::-webkit-scrollbar { display: none; }
@@ -43,17 +44,10 @@
         .slide-up-enter-active, .slide-up-leave-active { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(40px) scale(0.95); }
         
-        .splash-enter-active, .splash-leave-active { transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-        .splash-leave-to { opacity: 0; transform: scale(1.05); pointer-events: none; }
-        .logo-path { stroke-dasharray: 150; stroke-dashoffset: 150; animation: drawLine 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-        .logo-arrow { stroke-dasharray: 50; stroke-dashoffset: 50; animation: drawLine 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; animation-delay: 1.2s; }
+        .splash-enter-active, .splash-leave-active { transition: opacity 0.6s ease; }
+        .splash-leave-to { opacity: 0; pointer-events: none; }
+        .logo-path { stroke-dasharray: 150; stroke-dashoffset: 150; animation: drawLine 1.5s forwards; }
         @keyframes drawLine { to { stroke-dashoffset: 0; } }
-        .splash-text { opacity: 0; transform: translateY(10px); animation: fadeUp 0.8s ease forwards; animation-delay: 0.8s; }
-        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
-
-        .list-enter-active, .list-leave-active { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .list-enter-from { opacity: 0; transform: translateX(-30px); }
-        .list-leave-to { opacity: 0; transform: scale(0.9); }
         
         .swipe-item { touch-action: pan-y; position: relative; overflow: hidden; border-radius: 1.5rem; }
         .swipe-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -66,17 +60,11 @@
             <div v-if="!appLoaded" class="fixed inset-0 z-[999] flex flex-col items-center justify-center" :style="{ background: 'var(--bg)' }">
                 <div class="w-32 h-32 mb-6 relative">
                     <svg viewBox="0 0 100 100" class="w-full h-full" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <defs>
-                            <linearGradient id="flowGradient" x1="0%" y1="100%" x2="100%" y2="0%">
-                                <stop offset="0%" stop-color="#3b82f6" />
-                                <stop offset="100%" stop-color="#10b981" />
-                            </linearGradient>
-                        </defs>
-                        <path class="logo-path" d="M 15 80 Q 40 80, 55 55 T 80 25" stroke="url(#flowGradient)" stroke-width="10" />
-                        <path class="logo-arrow" d="M 55 25 L 80 25 L 80 50" stroke="#10b981" stroke-width="10" />
+                        <path class="logo-path" d="M 15 80 Q 40 80, 55 55 T 80 25" stroke="#3b82f6" stroke-width="10" />
+                        <path d="M 55 25 L 80 25 L 80 50" stroke="#10b981" stroke-width="10" />
                     </svg>
                 </div>
-                <h1 class="text-3xl font-900 tracking-tighter splash-text" :style="{ color: 'var(--text-main)' }">
+                <h1 class="text-3xl font-900 tracking-tighter" :style="{ color: 'var(--text-main)' }">
                     Flow<span class="text-blue-500">Finance</span>
                 </h1>
             </div>
@@ -87,7 +75,7 @@
                 <div class="flex flex-col">
                     <div class="flex items-center gap-2 mb-3">
                         <svg viewBox="0 0 100 100" class="w-6 h-6" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M 15 80 Q 40 80, 55 55 T 80 25" stroke="url(#flowGradient)" stroke-width="12" />
+                            <path d="M 15 80 Q 40 80, 55 55 T 80 25" stroke="#3b82f6" stroke-width="12" />
                             <path d="M 55 25 L 80 25 L 80 50" stroke="#10b981" stroke-width="12" />
                         </svg>
                         <h1 class="text-2xl font-900 tracking-tighter">Flow<span class="text-blue-500">Finance</span></h1>
@@ -97,9 +85,8 @@
                         <select v-model="activeMonth" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                             <option v-for="m in availableMonths" :key="m.val" :value="m.val">{{ m.label }}</option>
                         </select>
-                        <div class="px-4 py-2 rounded-full border border-blue-500/50 bg-blue-500/10 text-blue-500 text-[11px] font-bold flex items-center gap-2 shadow-sm transition-all active:scale-95">
-                            {{ activeMonthLabel }}
-                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
+                        <div class="px-4 py-2 rounded-full border border-blue-500/50 bg-blue-500/10 text-blue-500 text-[11px] font-bold flex items-center gap-2 shadow-sm">
+                            {{ activeMonthLabel }} ▾
                         </div>
                     </div>
                 </div>
@@ -120,21 +107,10 @@
                     <div v-if="transactions.length === 0" class="panel p-8 flex flex-col items-center justify-center text-center mt-6">
                         <span class="text-6xl mb-6 animate-bounce">🚀</span>
                         <h3 class="text-xl font-900 mb-3">Начните учет</h3>
-                        <button @click="loadDemoData" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-900 text-xs tracking-widest uppercase shadow-lg shadow-blue-500/30">Посмотреть демо</button>
+                        <button @click="loadDemoData" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-900 text-xs tracking-widest uppercase">Посмотреть демо</button>
                     </div>
 
                     <template v-else>
-                        <div class="panel p-5 relative overflow-hidden group">
-                            <div class="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-green-500/10 opacity-50"></div>
-                            <div class="relative z-10 flex items-start gap-3">
-                                <span class="text-2xl mt-1">🤖</span>
-                                <div>
-                                    <h3 class="font-900 text-[10px] tracking-widest uppercase text-blue-500 mb-1">AI Аналитика</h3>
-                                    <p class="text-[11px] font-semibold leading-relaxed" :class="isLight ? 'text-gray-700' : 'text-gray-300'">{{ smartInsight }}</p>
-                                </div>
-                            </div>
-                        </div>
-
                         <div class="panel p-6 relative overflow-hidden">
                             <div class="absolute bottom-0 left-0 right-0 h-1/2 opacity-20 pointer-events-none">
                                 <svg viewBox="0 0 100 30" preserveAspectRatio="none" class="w-full h-full text-blue-500">
@@ -144,155 +120,71 @@
                             
                             <div class="relative z-10 flex justify-between items-start mb-6">
                                 <div>
-                                    <p class="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Остаток месяца</p>
+                                    <p class="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Баланс месяца</p>
                                     <div class="text-5xl font-900 tracking-tighter" :class="animatedBalance >= 0 ? '' : 'text-rose-500'">
-                                        {{ animatedBalance >= 0 ? '+' : '' }}{{ animatedBalance.toFixed(2) }}<span class="text-xl text-blue-500 ml-1">€</span>
-                                    </div>
-                                    <div class="mt-2 text-[11px] font-bold flex items-center gap-1" :class="forecast.save >= 0 ? 'text-green-500' : 'text-rose-500'">
-                                        Прогноз: {{ forecast.save >= 0 ? '+' : '' }}{{ forecast.save.toFixed(0) }} €
+                                        {{ animatedBalance.toFixed(2) }}<span class="text-xl text-blue-500 ml-1">€</span>
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Трата</p>
-                                    <div class="text-2xl font-900">{{ forecast.daily.toFixed(0) }}</div>
-                                    <p class="text-[10px] text-muted mt-1 font-semibold">€ / день</p>
+                                    <p class="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Трата в день</p>
+                                    <div class="text-2xl font-900">{{ forecast.daily.toFixed(0) }}€</div>
                                 </div>
                             </div>
 
-                            <div class="relative z-10 flex justify-between items-center pt-4 border-t" style="border-color: var(--border-color)">
-                                <div>
-                                    <span class="text-[9px] text-muted font-bold uppercase tracking-widest">Доходы</span>
-                                    <div class="text-base font-900 text-green-500 mt-0.5">+{{ monthIncome.toFixed(0) }} €</div>
-                                </div>
-                                <div class="w-px h-8" :style="{ background: 'var(--border-color)' }"></div>
-                                <div class="text-right">
-                                    <span class="text-[9px] text-muted font-bold uppercase tracking-widest">Расходы</span>
-                                    <div class="text-base font-900 text-rose-500 mt-0.5">-{{ monthExpense.toFixed(0) }} €</div>
-                                </div>
+                            <div class="relative z-10 flex justify-between items-center pt-4 border-t border-white/5">
+                                <div class="text-green-500 font-900">+{{ monthIncome.toFixed(0) }} €</div>
+                                <div class="text-rose-500 font-900">-{{ monthExpense.toFixed(0) }} €</div>
                             </div>
                         </div>
 
                         <div class="mt-8 flex-1">
-                            <h2 class="text-[10px] text-muted font-bold uppercase tracking-widest mb-6 ml-4 flex justify-between">Последние операции</h2>
+                            <h2 class="text-[10px] text-muted font-bold uppercase tracking-widest mb-6 ml-4">Последние операции</h2>
                             <transition-group name="list" tag="div" class="space-y-4">
                                 <div v-for="t in filteredTxs.slice(0, 5)" :key="t.id" class="swipe-item">
-                                    <div class="absolute inset-y-0 left-0 w-1/2 flex justify-start items-center px-6" :style="{ backgroundColor: 'var(--accent)', opacity: getSwipeOpacity(t.id, 'right') }">
-                                        <svg width="20" height="20" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24" :style="{ transform: `scale(${getSwipeOpacity(t.id, 'right')})` }"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                    </div>
-                                    <div class="absolute inset-y-0 right-0 w-1/2 flex justify-end items-center px-6 cursor-pointer" :style="{ backgroundColor: '#f43f5e', opacity: getSwipeOpacity(t.id, 'left'), pointerEvents: getSwipeOffset(t.id) < -40 ? 'auto' : 'none' }" @click="deleteTx(t.id)">
-                                        <svg width="20" height="20" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24" :style="{ transform: `scale(${getSwipeOpacity(t.id, 'left')})` }"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    <div class="absolute inset-y-0 right-0 w-1/2 flex justify-end items-center px-6 bg-rose-500" @click="deleteTx(t.id)">
+                                        <span class="text-white font-900 text-xs">УДАЛИТЬ</span>
                                     </div>
                                     <div class="panel p-5 relative flex justify-between items-center w-full" :class="{ 'swipe-transition': !isSwiping(t.id) }" :style="{ transform: `translateX(${getSwipeOffset(t.id)}px)` }" @touchstart="onTouchStart($event, t.id)" @touchmove="onTouchMove($event, t.id)" @touchend="onTouchEnd($event, t.id)">
                                         <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm" :style="{ background: isLight ? '#fff' : 'rgba(0,0,0,0.3)', border: `1px solid ${getCatColor(t.cat)}50` }">{{ getCatIcon(t.cat) }}</div>
-                                            <div><h3 class="font-900 text-base leading-none">{{ t.name }}</h3><p class="text-[10px] font-bold mt-1 text-muted">{{ formatDate(t.date) }}</p></div>
+                                            <div class="text-2xl">{{ getCatIcon(t.cat) }}</div>
+                                            <div>
+                                                <h3 class="font-900 text-base leading-none">{{ t.name }}</h3>
+                                                <p class="text-[10px] font-bold mt-1 text-muted">{{ formatDate(t.date) }}</p>
+                                            </div>
                                         </div>
-                                        <div class="text-right"><span class="text-lg font-900" :class="t.amount > 0 ? 'text-green-500' : ''">{{ t.amount > 0 ? '+' : '' }}{{ Math.abs(t.amount).toFixed(2) }} €</span></div>
+                                        <div class="text-right">
+                                            <span class="text-lg font-900" :class="t.amount > 0 ? 'text-green-500' : ''">
+                                                {{ t.amount > 0 ? '+' : '' }}{{ Math.abs(t.amount).toFixed(2) }} €
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </transition-group>
-                            <button v-if="filteredTxs.length > 5" @click="openHistory" class="w-full mt-4 py-4 rounded-2xl bg-input border border-white/5 font-900 text-xs tracking-widest text-muted uppercase active:scale-95 transition-transform hover:text-blue-500">Все операции ({{ filteredTxs.length }})</button>
+                            <button @click="openHistory" class="w-full mt-4 py-4 rounded-2xl bg-input border border-white/5 font-900 text-xs text-muted uppercase">Вся история ({{ filteredTxs.length }})</button>
                         </div>
                     </template>
                 </div>
             </transition>
 
             <transition name="slide-up">
-                <div v-if="showHistory" class="panel flex flex-col fixed inset-0 z-40 m-0 rounded-none sm:m-4 sm:rounded-2xl pb-24">
-                    <div class="p-6 pb-2 border-b border-white/5">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="font-900 text-xl tracking-tight uppercase">История</h2>
-                            <button @click="showHistory = false" class="w-8 h-8 flex items-center justify-center bg-input rounded-full font-bold">✕</button>
-                        </div>
-                        <div class="space-y-3">
-                            <div class="flex gap-2">
-                                <div class="flex-1 relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 text-[8px] font-bold tracking-widest">ОТ</span><input type="date" v-model="historyDateFrom" class="w-full bg-input rounded-xl pl-8 pr-2 py-2.5 font-bold outline-none focus:border-blue-500 text-xs transition-colors [color-scheme:dark]"></div>
-                                <div class="flex-1 relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 text-[8px] font-bold tracking-widest">ДО</span><input type="date" v-model="historyDateTo" class="w-full bg-input rounded-xl pl-8 pr-2 py-2.5 font-bold outline-none focus:border-blue-500 text-xs transition-colors [color-scheme:dark]"></div>
-                                <button v-if="historyDateFrom || historyDateTo || searchQuery || historyFilter !== 'all'" @click="resetFilters" class="px-3 rounded-xl bg-rose-500/10 text-rose-500 font-bold text-xs">✕</button>
-                            </div>
-                            <div class="relative"><span class="absolute left-4 top-1/2 -translate-y-1/2 opacity-50">🔍</span><input type="text" v-model="searchQuery" class="w-full bg-input rounded-xl pl-10 pr-4 py-2.5 font-bold outline-none focus:border-blue-500 text-sm transition-colors" placeholder="Поиск транзакций..."></div>
-                            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                                <button v-for="f in ['all', 'income', 'expense']" :key="f" @click="historyFilter = f" class="px-4 py-1.5 rounded-full text-[10px] font-bold border transition-all" :class="historyFilter === f ? 'border-blue-500 bg-blue-500/10 text-blue-500' : 'border-transparent bg-input text-muted'">{{ f === 'all' ? 'Все' : (f === 'income' ? 'Доходы' : 'Расходы') }}</button>
-                            </div>
-                        </div>
+                <div v-if="showSettings" class="panel p-6 flex flex-col min-h-[40vh] mt-4 z-40 relative">
+                    <div class="flex justify-between items-center mb-8">
+                        <h2 class="font-900 text-xl tracking-tight">НАСТРОЙКИ</h2>
+                        <button @click="showSettings = false" class="w-8 h-8 flex items-center justify-center bg-input rounded-full font-bold">✕</button>
                     </div>
-                    <div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
-                        <div v-for="t in searchedTxs.slice(0, historyLimit)" :key="t.id" class="swipe-item">
-                            <div class="absolute inset-y-0 left-0 w-1/2 flex justify-start items-center px-6" :style="{ backgroundColor: 'var(--accent)', opacity: getSwipeOpacity(t.id, 'right') }"><svg width="18" height="18" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></div>
-                            <div class="absolute inset-y-0 right-0 w-1/2 flex justify-end items-center px-6 cursor-pointer" :style="{ backgroundColor: '#f43f5e', opacity: getSwipeOpacity(t.id, 'left'), pointerEvents: getSwipeOffset(t.id) < -40 ? 'auto' : 'none' }" @click="deleteTx(t.id)"><svg width="18" height="18" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></div>
-                            <div class="bg-input p-5 relative flex justify-between items-center w-full rounded-[1.5rem]" :class="{ 'swipe-transition': !isSwiping(t.id) }" :style="{ transform: `translateX(${getSwipeOffset(t.id)}px)` }" @touchstart="onTouchStart($event, t.id)" @touchmove="onTouchMove($event, t.id)" @touchend="onTouchEnd($event, t.id)">
-                                <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" :style="{ background: isLight ? '#fff' : 'rgba(0,0,0,0.3)', border: `1px solid ${getCatColor(t.cat)}50` }">{{ getCatIcon(t.cat) }}</div><div><h3 class="font-900 text-sm">{{ t.name }}</h3><p class="text-[9px] font-bold text-muted">{{ formatDate(t.date) }}</p></div></div>
-                                <div class="text-right"><span class="text-base font-900" :class="t.amount > 0 ? 'text-green-500' : ''">{{ t.amount > 0 ? '+' : '' }}{{ Math.abs(t.amount).toFixed(2) }} €</span></div>
-                            </div>
-                        </div>
-                        <button v-if="historyLimit < searchedTxs.length" @click="historyLimit += 20" class="w-full py-4 bg-white/5 rounded-2xl font-900 text-xs text-muted uppercase">Загрузить еще</button>
-                    </div>
-                </div>
-            </transition>
-
-            <transition name="slide-up">
-                <div v-if="sessionMode" class="panel p-6 flex flex-col min-h-[75vh] mt-4 relative overflow-hidden z-50">
-                    <div class="flex justify-between items-center mb-8 relative z-10">
-                        <div class="flex items-center gap-4">
-                            <div class="flex gap-1"><div v-for="step in 3" :key="step" class="h-1.5 w-6 rounded-full transition-colors duration-300" :class="step <= currentStep ? 'bg-blue-500' : 'bg-gray-500/30'"></div></div>
-                            <span v-if="editingId" class="text-[10px] font-900 text-blue-500 tracking-widest uppercase">РЕДАКТИРОВАНИЕ</span>
-                        </div>
-                        <button @click="cancelSession" class="text-[10px] font-bold text-muted uppercase tracking-widest">Отмена</button>
-                    </div>
-                    <div class="flex-1 flex flex-col justify-center min-h-[300px] relative z-10">
-                        <div v-if="currentStep === 1" class="w-full">
-                            <div class="flex justify-center gap-2 mb-8 bg-input p-1 rounded-full w-max mx-auto">
-                                <button @click="wizard.type = 'expense'" class="px-6 py-2.5 rounded-full font-800 text-xs transition-all" :class="wizard.type === 'expense' ? 'bg-white text-black' : 'text-muted'">РАСХОД</button>
-                                <button @click="wizard.type = 'income'" class="px-6 py-2.5 rounded-full font-800 text-xs transition-all" :class="wizard.type === 'income' ? 'bg-white text-black' : 'text-muted'">ДОХОД</button>
-                            </div>
-                            <input type="number" step="0.01" v-model.number="wizard.amount" ref="mainInput" class="input-huge" placeholder="0" autofocus>
-                        </div>
-                        <div v-if="currentStep === 2" class="w-full">
-                            <h2 class="text-center text-sm font-bold text-blue-500 uppercase mb-6 tracking-widest">Категория</h2>
-                            <div class="grid grid-cols-3 gap-3 overflow-y-auto max-h-[50vh] no-scrollbar pb-10">
-                                <button v-for="c in categories" :key="c.name" @click="selectCategory(c.name)" class="flex flex-col items-center justify-center py-5 px-2 rounded-2xl bg-input active:scale-95 transition-transform">
-                                    <span class="text-3xl mb-2">{{ c.icon }}</span><span class="text-[10px] font-bold text-muted w-full text-center leading-tight truncate px-1">{{ c.name }}</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div v-if="currentStep === 3" class="w-full space-y-6">
-                            <div><label class="text-[10px] font-bold text-muted uppercase tracking-widest pl-4">Название</label><input type="text" v-model="wizard.name" class="w-full mt-2 bg-input rounded-2xl p-4 font-bold outline-none focus:border-blue-500 text-lg" :placeholder="wizard.category"></div>
-                            <div><label class="text-[10px] font-bold text-muted uppercase tracking-widest pl-4">Дата</label><input type="date" v-model="wizard.date" class="w-full mt-2 bg-input rounded-2xl p-4 font-bold outline-none focus:border-blue-500 text-lg"></div>
-                        </div>
-                    </div>
-                    <button v-if="currentStep !== 2" @click="nextStep" class="w-full py-5 rounded-2xl bg-blue-600 text-white font-900 text-lg shadow-lg shadow-blue-500/30">{{ currentStep === 3 ? (editingId ? 'ОБНОВИТЬ' : 'СОХРАНИТЬ') : 'ДАЛЕЕ' }}</button>
-                </div>
-            </transition>
-
-            <transition name="slide-up">
-                <div v-if="showSettings" class="panel p-6 flex flex-col min-h-[60vh] mt-4 z-40 relative">
-                    <div class="flex justify-between items-center mb-8"><h2 class="font-900 text-xl tracking-tight">НАСТРОЙКИ</h2><button @click="showSettings = false" class="w-8 h-8 flex items-center justify-center bg-input rounded-full font-bold">✕</button></div>
-                    <div class="space-y-6">
-                        <div class="p-5 bg-input rounded-2xl">
-                            <div class="flex items-center gap-3 mb-3"><span class="text-2xl">💾</span><h3 class="font-900 text-sm">Бэкап</h3></div>
-                            <div class="flex gap-2">
-                                <button @click="exportJSON" class="flex-1 py-3 bg-white/10 rounded-xl font-900 text-[10px] uppercase border border-white/10">Экспорт</button>
-                                <button @click="triggerJSON" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-900 text-[10px] uppercase">Импорт</button>
-                                <input type="file" id="jsonFile" accept=".json" @change="importJSON" class="hidden">
-                            </div>
-                        </div>
-                        <div class="p-5 bg-input rounded-2xl">
-                            <div class="flex items-center gap-3 mb-3"><span class="text-2xl">🏦</span><h3 class="font-900 text-sm">Swedbank</h3></div>
-                            <input type="file" id="csvFile" accept=".csv" @change="importCSV" class="hidden"><button @click="triggerCSV" class="w-full py-3 bg-white/10 rounded-xl font-900 text-[10px] uppercase border border-white/10">Импорт CSV</button>
-                        </div>
-                        <button @click="hardReset" class="w-full py-4 text-rose-500 bg-rose-500/10 rounded-xl font-900 text-xs uppercase tracking-widest">Очистить базу</button>
-                    </div>
+                    <button @click="hardReset" class="w-full py-4 text-rose-500 bg-rose-500/10 rounded-xl font-900 text-xs uppercase tracking-widest">Очистить базу</button>
                 </div>
             </transition>
 
             <div v-if="!sessionMode && !showSettings && !showHistory" class="fixed bottom-8 right-6 z-50">
-                <button @click="startSession" class="w-16 h-16 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform shadow-[0_10px_25px_rgba(59,130,246,0.5)]" style="background: linear-gradient(135deg, #3b82f6, #2563eb);"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg></button>
+                <button @click="startSession" class="w-16 h-16 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform shadow-xl" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                    <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        // РЕГИСТРАЦИЯ SERVICE WORKER (ФИКС ДЛЯ PWA)
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
         }
@@ -302,209 +194,43 @@
         createApp({
             setup() {
                 const appLoaded = ref(false);
-                const DEFAULT_CATS = [
-                    {name:'Продукты', icon:'🛒', color:'#f97316'}, {name:'Транспорт', icon:'⛽', color:'#3b82f6'},
-                    {name:'Аптека', icon:'💊', color:'#f43f5e'}, {name:'Рестораны', icon:'🍕', color:'#facc15'},
-                    {name:'Одежда', icon:'👗', color:'#a855f7'}, {name:'Кредиты', icon:'🏦', color:'#ec4899'},
-                    {name:'Связь', icon:'📱', color:'#8b5cf6'}, {name:'Зарплата', icon:'💰', color:'#10b981'},
-                    {name:'Переводы', icon:'💸', color:'#fcd34d'}, {name:'Здоровье', icon:'🏃', color:'#22c55e'},
-                    {name:'Развлечения', icon:'🎮', color:'#ef4444'}, {name:'Дом', icon:'🏠', color:'#eab308'},
-                    {name:'Прочее', icon:'📦', color:'#6b7280'}
-                ];
-
-                // STORAGE & SANITIZER
-                let initialTxs = [], initialCats = [];
-                try { 
-                    initialTxs = JSON.parse(localStorage.getItem('financeX_v5')) || []; 
-                    initialCats = JSON.parse(localStorage.getItem('financeX_cats_v5')) || [];
-                } catch(e) {}
-                
-                const seenIds = new Set();
-                const transactions = ref((Array.isArray(initialTxs) ? initialTxs : []).map(t => {
-                    if (seenIds.has(t.id)) t.id = Date.now() + Math.random();
-                    seenIds.add(t.id); return t;
-                }));
-
-                const categories = ref(initialCats.length ? initialCats : [...DEFAULT_CATS]);
-                const activeMonth = ref(new Date().toISOString().slice(0, 7));
-                const isLight = ref(localStorage.getItem('financeX_theme') === 'light');
+                const transactions = ref(JSON.parse(localStorage.getItem('finance_local_v8')) || []);
+                const isLight = ref(localStorage.getItem('finance_theme') === 'light');
                 const sessionMode = ref(false), showSettings = ref(false), showHistory = ref(false);
-                const searchQuery = ref(''), historyFilter = ref('all'), historyLimit = ref(20);
-                const historyDateFrom = ref(''), historyDateTo = ref('');
-                const currentStep = ref(1), mainInput = ref(null), editingId = ref(null);
-                const wizard = ref({ type: 'expense', amount: '', category: '', name: '', date: '' });
-                const jsonMsg = ref(''), importMsg = ref('');
+                const activeMonth = ref(new Date().toISOString().slice(0, 7));
+                const currentStep = ref(1), wizard = ref({});
+
+                const categories = [
+                    {name:'Продукты', icon:'🛒'}, {name:'Транспорт', icon:'⛽'}, 
+                    {name:'Рестораны', icon:'🍕'}, {name:'Зарплата', icon:'💰'},
+                    {name:'Дом', icon:'🏠'}, {name:'Прочее', icon:'📦'}
+                ];
 
                 onMounted(() => { 
                     if(isLight.value) document.body.classList.add('light-theme'); 
-                    setTimeout(() => appLoaded.value = true, 2200);
+                    setTimeout(() => appLoaded.value = true, 1500);
                 });
 
                 const toggleTheme = () => {
                     isLight.value = !isLight.value;
-                    localStorage.setItem('financeX_theme', isLight.value ? 'light' : 'dark');
+                    localStorage.setItem('finance_theme', isLight.value ? 'light' : 'dark');
                     document.body.classList.toggle('light-theme', isLight.value);
                 };
 
-                const saveData = () => {
-                    localStorage.setItem('financeX_v5', JSON.stringify(transactions.value));
-                    localStorage.setItem('financeX_cats_v5', JSON.stringify(categories.value));
-                };
-
-                const getCatIcon = n => categories.value.find(c => c.name === n)?.icon || '📦';
-                const getCatColor = n => categories.value.find(c => c.name === n)?.color || '#3b82f6';
-                const formatDate = d => d ? d.split('-').reverse().join('.') : '';
-                const scrollToTop = () => window.scrollTo({top: 0, behavior: 'smooth'});
-
-                const availableMonths = computed(() => {
-                    const txs = transactions.value;
-                    if (!txs.length) return [{val: activeMonth.value, label: activeMonth.value}];
-                    const mSet = new Set(txs.map(t => t.date.slice(0,7)));
-                    mSet.add(new Date().toISOString().slice(0, 7)); 
-                    return Array.from(mSet).sort().reverse().map(m => {
-                        const [y, mo] = m.split('-'), mNames = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
-                        return { val: m, label: `${mNames[parseInt(mo)-1]} ${y}` };
-                    });
-                });
-
-                const activeMonthLabel = computed(() => availableMonths.value.find(m => m.val === activeMonth.value)?.label || activeMonth.value);
-                const filteredTxs = computed(() => transactions.value.filter(t => t.date.startsWith(activeMonth.value)).sort((a,b) => b.date.localeCompare(a.date)));
-                const monthIncome = computed(() => filteredTxs.value.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0));
-                const monthExpense = computed(() => filteredTxs.value.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0));
-                const monthBalance = computed(() => monthIncome.value - monthExpense.value);
-
-                const openHistory = () => { searchQuery.value = ''; historyFilter.value = 'all'; historyLimit.value = 20; showHistory.value = true; scrollToTop(); };
-                const closeHistory = () => showHistory.value = false;
-                const resetFilters = () => { searchQuery.value = ''; historyFilter.value = 'all'; historyDateFrom.value = ''; historyDateTo.value = ''; };
-
-                const activeCategoriesUsed = computed(() => {
-                    const used = new Set(filteredTxs.value.map(t => t.cat));
-                    return categories.value.filter(c => used.has(c.name));
-                });
-
-                const searchedTxs = computed(() => {
-                    let res = filteredTxs.value;
-                    if (historyDateFrom.value) res = res.filter(t => t.date >= historyDateFrom.value);
-                    if (historyDateTo.value) res = res.filter(t => t.date <= historyDateTo.value);
-                    if (historyFilter.value === 'income') res = res.filter(t => t.amount > 0);
-                    else if (historyFilter.value === 'expense') res = res.filter(t => t.amount < 0);
-                    else if (historyFilter.value !== 'all') res = res.filter(t => t.cat === historyFilter.value);
-                    if (searchQuery.value.trim()) {
-                        const q = searchQuery.value.toLowerCase().trim();
-                        res = res.filter(t => (t.name||'').toLowerCase().includes(q) || (t.cat||'').toLowerCase().includes(q) || Math.abs(t.amount).toString().includes(q));
-                    }
-                    return res;
-                });
+                const saveData = () => { localStorage.setItem('finance_local_v8', JSON.stringify(transactions.value)); };
 
                 const animatedBalance = ref(0);
-                watch(monthBalance, newVal => {
-                    const start = animatedBalance.value, dist = newVal - start;
-                    const startTime = performance.now();
-                    const animate = currentTime => {
-                        const elapsed = currentTime - startTime;
-                        const p = Math.min(elapsed / 500, 1);
-                        animatedBalance.value = start + dist * (1 - Math.pow(1 - p, 4));
-                        if (p < 1) requestAnimationFrame(animate); else animatedBalance.value = newVal;
-                    };
-                    requestAnimationFrame(animate);
+                const monthIncome = computed(() => transactions.value.filter(t => t.date.startsWith(activeMonth.value) && t.amount > 0).reduce((s, t) => s + t.amount, 0));
+                const monthExpense = computed(() => transactions.value.filter(t => t.date.startsWith(activeMonth.value) && t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0));
+                
+                watch(() => monthIncome.value - monthExpense.value, (newVal) => {
+                    let start = animatedBalance.value;
+                    const animate = () => {
+                        const diff = newVal - animatedBalance.value;
+                        if (Math.abs(diff) < 0.1) animatedBalance.value = newVal;
+                        else { animatedBalance.value += diff * 0.1; requestAnimationFrame(animate); }
+                    }; animate();
                 }, { immediate: true });
 
-                // SWIPE
                 const swipeState = ref({});
-                const onTouchStart = (e, id) => { if (!swipeState.value[id]) swipeState.value[id] = { offset: 0 }; swipeState.value[id].startX = e.touches[0].clientX - swipeState.value[id].offset; swipeState.value[id].swiping = true; };
-                const onTouchMove = (e, id) => { if (!swipeState.value[id]?.swiping) return; let diff = e.touches[0].clientX - swipeState.value[id].startX; if (diff < -120) diff = -120 - (Math.abs(diff) - 120) * 0.2; if (diff > 120) diff = 120 + (Math.abs(diff) - 120) * 0.2; swipeState.value[id].offset = diff; };
-                const onTouchEnd = (e, id) => { if (!swipeState.value[id]) return; swipeState.value[id].swiping = false; const offset = swipeState.value[id].offset; if (offset < -70) swipeState.value[id].offset = -110; else if (offset > 70) { swipeState.value[id].offset = 0; editTx(id); } else swipeState.value[id].offset = 0; };
-                const getSwipeOffset = id => swipeState.value[id]?.offset || 0;
-                const isSwiping = id => swipeState.value[id]?.swiping || false;
-                const getSwipeOpacity = (id, dir) => { const off = getSwipeOffset(id); return dir === 'right' && off > 0 ? Math.min(1, off / 80) : (dir === 'left' && off < 0 ? Math.min(1, -off / 80) : 0); };
-
-                const deleteTx = id => { transactions.value = transactions.value.filter(t => t.id !== id); delete swipeState.value[id]; saveData(); };
-
-                const sparklinePoints = computed(() => {
-                    const txs = filteredTxs.value.slice().sort((a,b) => a.date.localeCompare(b.date)); 
-                    if (!txs.length) return "0,30 100,30";
-                    let bal = 0; const pts = txs.map(t => { bal += t.amount; return bal; });
-                    const min = Math.min(...pts, 0), max = Math.max(...pts, 1), range = max - min || 1;
-                    return pts.map((p, i) => `${(i / (pts.length - 1 || 1)) * 100},${30 - ((p - min) / range * 25)}`).join(' ');
-                });
-
-                const forecast = computed(() => {
-                    const [y, m] = activeMonth.value.split('-').map(Number);
-                    if(!y || !m) return { daily: 0, save: 0 };
-                    const today = new Date(), isCurrent = today.getFullYear() === y && today.getMonth()+1 === m;
-                    const days = new Date(y, m, 0).getDate(), dayNow = isCurrent ? today.getDate() : days;
-                    const daily = dayNow > 0 ? monthExpense.value / dayNow : 0;
-                    return { daily, save: monthIncome.value - (daily * days) };
-                });
-
-                const smartInsight = computed(() => {
-                    if(!monthExpense.value) return "Добавьте расходы для анализа.";
-                    return forecast.value.save < 0 ? `Внимание: к концу месяца возможен минус на ${Math.abs(forecast.value.save).toFixed(0)}€.` : `Отличный темп! Ожидаемый остаток: ${forecast.value.save.toFixed(0)}€.`;
-                });
-
-                const startSession = () => { editingId.value = null; wizard.value = { type: 'expense', amount: '', category: '', name: '', date: new Date().toISOString().split('T')[0] }; currentStep.value = 1; sessionMode.value = true; nextTick(() => mainInput.value?.focus()); };
-                const editTx = id => { const t = transactions.value.find(tx => tx.id === id); if(!t) return; editingId.value = id; wizard.value = { type: t.amount >= 0 ? 'income' : 'expense', amount: Math.abs(t.amount), category: t.cat, name: t.name === t.cat ? '' : t.name, date: t.date }; currentStep.value = 1; sessionMode.value = true; nextTick(() => mainInput.value?.focus()); };
-                const selectCategory = cat => { wizard.value.category = cat; wizard.value.name = wizard.value.name || cat; currentStep.value = 3; };
-                const nextStep = () => {
-                    if (currentStep.value === 1 && wizard.value.amount > 0) currentStep.value = 2;
-                    else if (currentStep.value === 3) {
-                        const amt = wizard.value.type === 'expense' ? -Math.abs(wizard.value.amount) : Math.abs(wizard.value.amount);
-                        const data = { name: wizard.value.name || wizard.value.category, amount: amt, cat: wizard.value.category, date: wizard.value.date || new Date().toISOString().split('T')[0] };
-                        if (editingId.value) { const idx = transactions.value.findIndex(tx => tx.id === editingId.value); if (idx !== -1) transactions.value[idx] = { ...transactions.value[idx], ...data }; }
-                        else transactions.value.unshift({ id: Date.now() + Math.random(), ...data });
-                        saveData(); sessionMode.value = false; editingId.value = null; scrollToTop();
-                    }
-                };
-                const cancelSession = () => { sessionMode.value = false; editingId.value = null; };
-
-                const exportJSON = () => {
-                    const data = { version: 5, transactions: transactions.value, categories: categories.value };
-                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `flowfinance-${new Date().toISOString().slice(0, 10)}.json`; a.click();
-                };
-                const triggerJSON = () => document.getElementById('jsonFile').click();
-                const importJSON = e => {
-                    const file = e.target.files[0]; if (!file) return;
-                    const r = new FileReader(); r.onload = ev => {
-                        try {
-                            const p = JSON.parse(ev.target.result); const ids = new Set(transactions.value.map(t => t.id));
-                            const newTxs = (p.transactions || []).filter(t => !ids.has(t.id)).map(t => { if(ids.has(t.id)) t.id = Date.now()+Math.random(); ids.add(t.id); return t; });
-                            transactions.value = [...transactions.value, ...newTxs].sort((a,b) => b.date.localeCompare(a.date)); saveData(); showSettings.value = false;
-                        } catch(err) { alert('Ошибка JSON'); }
-                    }; r.readAsText(file);
-                };
-
-                const triggerCSV = () => document.getElementById('csvFile').click();
-                const importCSV = e => {
-                    const file = e.target.files[0]; if (!file) return;
-                    const r = new FileReader(); r.onload = ev => {
-                        try {
-                            const lines = ev.target.result.split(/\r?\n/).filter(l => l.trim()); const delim = lines[0].includes(';') ? ';' : ','; let added = 0;
-                            for(let i=1; i<lines.length; i++) {
-                                const cols = lines[i].split(delim).map(c => c.replace(/^"|"$/g, '').trim()); if(cols.length < 5) continue;
-                                const dMatch = cols.find(c => c.match(/^\d{2}\.\d{2}\.\d{4}$/)); if(!dMatch) continue;
-                                const date = dMatch.split('.').reverse().join('-'), amtStr = cols.find(c => c.match(/^-?\d+[,.]\d{2}$/)); if(!amtStr) continue;
-                                const amt = parseFloat(amtStr.replace(',', '.')), name = cols[3] || 'Swedbank TX';
-                                if(!transactions.value.some(t => t.date === date && t.amount === amt && t.name === name)) { transactions.value.unshift({ id: Date.now() + Math.random(), name, amount: amt, date, cat: 'Прочее' }); added++; }
-                            }
-                            saveData(); importMsg.value = `+${added} операций`; setTimeout(() => showSettings.value = false, 2000);
-                        } catch(err) { alert('Ошибка CSV'); }
-                    }; r.readAsText(file, 'UTF-8');
-                };
-
-                const hardReset = () => { if(confirm("Удалить ВСЁ?")) { transactions.value = []; categories.value = [...DEFAULT_CATS]; saveData(); showSettings.value = false; } };
-                const loadDemoData = () => {
-                    const demo = []; const now = new Date(), y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0');
-                    demo.push({ id: Date.now()+1, name: 'Зарплата', amount: 4500, cat: 'Зарплата', date: `${y}-${m}-01` });
-                    demo.push({ id: Date.now()+2, name: 'Аренда', amount: -1200, cat: 'Дом', date: `${y}-${m}-02` });
-                    transactions.value = demo.sort((a,b) => b.date.localeCompare(a.date)); activeMonth.value = `${y}-${m}`; saveData(); showSettings.value = false;
-                };
-
-                return { 
-                    appLoaded, transactions, categories, activeMonth, availableMonths, activeMonthLabel, filteredTxs, monthIncome, monthExpense, monthBalance, animatedBalance, sparklinePoints, forecast, smartInsight, sessionMode, showSettings, currentStep, wizard, mainInput, editingId, isLight, toggleTheme, showHistory, searchQuery, historyFilter, historyDateFrom, historyDateTo, historyLimit, searchedTxs, activeCategoriesUsed, openHistory, closeHistory, resetFilters, startSession, editTx, selectCategory, nextStep, cancelSession, deleteTx, getCatIcon, getCatColor, formatDate, swipeState, onTouchStart, onTouchMove, onTouchEnd, getSwipeOffset, getSwipeOpacity, isSwiping, exportJSON, triggerJSON, importJSON, jsonMsg, triggerCSV, importCSV, importMsg, hardReset, loadDemoData, scrollToTop
-                };
-            }
-        }).mount('#app');
-    </script>
-</body>
-</html>
+                const onTouchStart = (e, id) => { swipeState.value[id
